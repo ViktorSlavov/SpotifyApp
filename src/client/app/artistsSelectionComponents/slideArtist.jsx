@@ -10,6 +10,8 @@ class SlideArtist extends React.Component {
     }
 
     handleClick(){
+        console.log(this.props.name);
+        //Test
         this.props.populate(this.props.name)
         let ph = this.state.check;
         this.setState({

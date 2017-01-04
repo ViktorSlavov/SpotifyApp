@@ -28309,6 +28309,8 @@
 	    _createClass(SlideArtist, [{
 	        key: 'handleClick',
 	        value: function handleClick() {
+	            console.log(this.props.name);
+	            //Test
 	            this.props.populate(this.props.name);
 	            var ph = this.state.check;
 	            this.setState({
