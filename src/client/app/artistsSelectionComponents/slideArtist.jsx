@@ -10,10 +10,24 @@ class SlideArtist extends React.Component {
     }
 
     handleClick(){
-        console.log(this.props.name);
-        //Test
-        this.props.populate(this.props.name)
         let ph = this.state.check;
+        if(ph == ''){
+            this.props.populate(
+                {
+                    artist: this.props.name,
+                    img: this.props.src,
+                    checked: true
+                }
+            )
+        } else {
+            this.props.populate(
+                {
+                    artist: this.props.name,
+                    img: this.props.src,
+                    checked: false
+                }
+            )
+        }
         this.setState({
             check: (ph == "\uf00c" ? '':'\uf00c'), // \u+ unicode from fontawesome;
         })

@@ -13,7 +13,19 @@ class SliderArtists extends React.Component{
        // this.populateSelectedArtists = this.populateSelectedArtists.bind(this);
     }
     populateSelectedArtists(value){
-       let phSelected = this.state.selected.concat(value);
+       let flag = 0;
+       let phSelected = this.state.selected;
+       for(let i = 0; i < phSelected.length; i++){
+          if(phSelected[i].artist == value.artist){
+            phSelected[i].checked = value.checked;
+            flag = 1;
+            break;
+          }
+       }
+       if(flag == 0){
+         phSelected.push(value);
+       }
+       console.log(phSelected);
        this.props.populate(phSelected);
        this.setState({
          selected: phSelected,

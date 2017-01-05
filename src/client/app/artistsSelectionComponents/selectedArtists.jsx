@@ -3,7 +3,7 @@ import React from 'react';
 class SelectedArtists extends React.Component {
     constructor(props){
         super(props);
-        
+       
         this.state = {
             artists: ''
         }
@@ -11,8 +11,9 @@ class SelectedArtists extends React.Component {
 
     render(){
         let content = this.props.selected.map(function(elem){
-            console.log(elem);
-            return <p>{elem}</p>
+            if(elem.checked == true){
+                return <p>{elem.artist}</p>
+            }
         })
         return (
             <div>

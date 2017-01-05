@@ -27648,7 +27648,19 @@
 	  _createClass(SliderArtists, [{
 	    key: 'populateSelectedArtists',
 	    value: function populateSelectedArtists(value) {
-	      var phSelected = this.state.selected.concat(value);
+	      var flag = 0;
+	      var phSelected = this.state.selected;
+	      for (var i = 0; i < phSelected.length; i++) {
+	        if (phSelected[i].artist == value.artist) {
+	          phSelected[i].checked = value.checked;
+	          flag = 1;
+	          break;
+	        }
+	      }
+	      if (flag == 0) {
+	        phSelected.push(value);
+	      }
+	      console.log(phSelected);
 	      this.props.populate(phSelected);
 	      this.setState({
 	        selected: phSelected
@@ -28309,10 +28321,20 @@
 	    _createClass(SlideArtist, [{
 	        key: 'handleClick',
 	        value: function handleClick() {
-	            console.log(this.props.name);
-	            //Test
-	            this.props.populate(this.props.name);
 	            var ph = this.state.check;
+	            if (ph == '') {
+	                this.props.populate({
+	                    artist: this.props.name,
+	                    img: this.props.src,
+	                    checked: true
+	                });
+	            } else {
+	                this.props.populate({
+	                    artist: this.props.name,
+	                    img: this.props.src,
+	                    checked: false
+	                });
+	            }
 	            this.setState({
 	                check: ph == '\uF00C' ? '' : '\uF00C' });
 	        }
@@ -28487,12 +28509,13 @@
 	        key: 'render',
 	        value: function render() {
 	            var content = this.props.selected.map(function (elem) {
-	                console.log(elem);
-	                return _react2.default.createElement(
-	                    'p',
-	                    null,
-	                    elem
-	                );
+	                if (elem.checked == true) {
+	                    return _react2.default.createElement(
+	                        'p',
+	                        null,
+	                        elem.artist
+	                    );
+	                }
 	            });
 	            return _react2.default.createElement(
 	                'div',
