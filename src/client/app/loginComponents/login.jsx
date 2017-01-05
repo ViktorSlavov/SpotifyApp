@@ -6,7 +6,7 @@ const requestOptions = {
     'response_type': 'token',
     'client_id': 'f17e400b61954282b60c821e78394fc4',
     'client_secret': '27255743bc7d43b8923bfba33e6dd39f',
-    'scope': 'user-top-read',
+    'scope': 'user-top-read playlist-modify-public',
     'redirect_uri': redirect,
     'state': (function(length) {
     var text = '';
@@ -40,7 +40,7 @@ class Login extends React.Component{
     render(){
         return (
             <div>
-                <button onClick={()=> this.buttonClick()}>Button</button>
+                <button onClick={()=> this.buttonClick()}>Login Button Boyz</button>
                 {this.props.children}
             </div>
         )

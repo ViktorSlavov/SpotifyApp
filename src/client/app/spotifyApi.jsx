@@ -18,6 +18,58 @@ let SpotifyApi = {
                 req.setRequestHeader('Authorization',auth,false)
                 req.send();
          })
+    },
+    createPlaylist : function(userId, token, playlistName, songs){
+        return new Promise(function(resolve,reject){
+            let params = JSON.stringify({
+                
+                    name : "Spotify Api Playlist Test"
+                
+            })
+            let req = new XMLHttpRequest();
+            let auth = `Bearer ${token}`;
+            req.onreadystatechange = function(data) {
+                    if (this.readyState == 4 && this.status == 200) {
+                        // that.setState({
+                        //     top:JSON.parse(data.currentTarget.response)
+                        // })
+                        resolve(JSON.parse(data.currentTarget.response).items);
+                    }
+                    else if(this.readyState == 4 && this.status != 200){
+                         reject('Error');
+                    }
+            };
+            req.open("POST", 'https://api.spotify.com/v1/users/' + userId + '/playlists',true);
+            console.log(auth)
+            req.setRequestHeader('Authorization',auth,false)
+            req.send(params);
+        })
+    },
+    getCurrentUserId : function(token, playlistName, songs){
+        let that = this;
+        return new Promise(function(resolve,reject){
+            let req = new XMLHttpRequest();
+            let auth = `Bearer ${token}`;
+            req.onreadystatechange = function(data) {
+                    if (this.readyState == 4 && this.status == 200) {
+                        // that.setState({
+                        //     top:JSON.parse(data.currentTarget.response)
+                        // })
+                        that.createPlaylist(JSON.parse(data.currentTarget.response).id, token, playlistName, songs);
+                    }
+                    else if(this.readyState == 4 && this.status != 200){
+                         reject('Error');
+                    }
+            };
+            req.open("GET", 'https://api.spotify.com/v1/me',true);
+            console.log(auth)
+            req.setRequestHeader('Authorization',auth,false)
+            req.send();
+        })
+    },
+    filterTracks : function(tracks){
+        let count = 50;
+        
     }
     
 }

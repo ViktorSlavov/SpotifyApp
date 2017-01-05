@@ -27301,7 +27301,7 @@
 	    'response_type': 'token',
 	    'client_id': 'f17e400b61954282b60c821e78394fc4',
 	    'client_secret': '27255743bc7d43b8923bfba33e6dd39f',
-	    'scope': 'user-top-read',
+	    'scope': 'user-top-read playlist-modify-public',
 	    'redirect_uri': redirect,
 	    'state': function (length) {
 	        var text = '';
@@ -27352,7 +27352,7 @@
 	                    { onClick: function onClick() {
 	                            return _this2.buttonClick();
 	                        } },
-	                    'Button'
+	                    'Login Button Boyz'
 	                ),
 	                this.props.children
 	            );
@@ -27524,6 +27524,55 @@
 	            req.setRequestHeader('Authorization', auth, false);
 	            req.send();
 	        });
+	    },
+	    createPlaylist: function createPlaylist(userId, token, playlistName, songs) {
+	        return new Promise(function (resolve, reject) {
+	            var params = JSON.stringify({
+
+	                name: "Spotify Api Playlist Test"
+
+	            });
+	            var req = new XMLHttpRequest();
+	            var auth = 'Bearer ' + token;
+	            req.onreadystatechange = function (data) {
+	                if (this.readyState == 4 && this.status == 200) {
+	                    // that.setState({
+	                    //     top:JSON.parse(data.currentTarget.response)
+	                    // })
+	                    resolve(JSON.parse(data.currentTarget.response).items);
+	                } else if (this.readyState == 4 && this.status != 200) {
+	                    reject('Error');
+	                }
+	            };
+	            req.open("POST", 'https://api.spotify.com/v1/users/' + userId + '/playlists', true);
+	            console.log(auth);
+	            req.setRequestHeader('Authorization', auth, false);
+	            req.send(params);
+	        });
+	    },
+	    getCurrentUserId: function getCurrentUserId(token, playlistName, songs) {
+	        var that = this;
+	        return new Promise(function (resolve, reject) {
+	            var req = new XMLHttpRequest();
+	            var auth = 'Bearer ' + token;
+	            req.onreadystatechange = function (data) {
+	                if (this.readyState == 4 && this.status == 200) {
+	                    // that.setState({
+	                    //     top:JSON.parse(data.currentTarget.response)
+	                    // })
+	                    that.createPlaylist(JSON.parse(data.currentTarget.response).id, token, playlistName, songs);
+	                } else if (this.readyState == 4 && this.status != 200) {
+	                    reject('Error');
+	                }
+	            };
+	            req.open("GET", 'https://api.spotify.com/v1/me', true);
+	            console.log(auth);
+	            req.setRequestHeader('Authorization', auth, false);
+	            req.send();
+	        });
+	    },
+	    filterTracks: function filterTracks(tracks) {
+	        var count = 50;
 	    }
 
 	};
@@ -28593,6 +28642,10 @@
 
 	var _audioFilter2 = _interopRequireDefault(_audioFilter);
 
+	var _spotifyApi = __webpack_require__(246);
+
+	var _spotifyApi2 = _interopRequireDefault(_spotifyApi);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -28601,26 +28654,19 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var SortableItem = (0, _reactSortableHoc.SortableElement)(function (_ref) {
-	    var value = _ref.value;
-	    return _react2.default.createElement(
-	        'li',
-	        { className: 'filters' },
-	        _react2.default.createElement(_audioFilter2.default, { value: value })
-	    );
-	});
+	// const SortableItem = SortableElement(({value}) => 
+	//     (
 
-	var SortableList = (0, _reactSortableHoc.SortableContainer)(function (_ref2) {
-	    var items = _ref2.items;
+	//     )
+	// );
 
-	    return _react2.default.createElement(
-	        'ul',
-	        null,
-	        items.map(function (value, index) {
-	            return _react2.default.createElement(SortableItem, { key: 'item-' + index, index: index, value: value });
-	        })
-	    );
-	});
+	// const SortableList = SortableContainer(({items}) => {
+	//     return (
+	//         <ul>
+
+	//         </ul>
+	//     );
+	// });
 
 	var AudioFilterContainer = function (_React$Component) {
 	    _inherits(AudioFilterContainer, _React$Component);
@@ -28631,21 +28677,31 @@
 	        var _this = _possibleConstructorReturn(this, (AudioFilterContainer.__proto__ || Object.getPrototypeOf(AudioFilterContainer)).call(this, props));
 
 	        _this.state = {
-	            items: ['Dance', 'Instrumental', 'Vocals', 'Energy', 'Beats per minute', 'Audiance included']
+	            token: localStorage.getItem('token'),
+	            items: ['Dance', 'Instrumental', 'Vocals', 'Energy', 'Beats per minute', 'Audiance included'],
+	            criteria: {}
 	        };
 	        return _this;
 	    }
 
 	    _createClass(AudioFilterContainer, [{
 	        key: 'onSortEnd',
-	        value: function onSortEnd(_ref3, e) {
-	            var oldIndex = _ref3.oldIndex,
-	                newIndex = _ref3.newIndex;
+	        value: function onSortEnd(_ref, e) {
+	            var oldIndex = _ref.oldIndex,
+	                newIndex = _ref.newIndex;
 
 	            this.setState({
 	                items: (0, _reactSortableHoc.arrayMove)(this.state.items, oldIndex, newIndex)
 	            });
-	            console.log(this.state.items);
+	        }
+	    }, {
+	        key: 'updateCriteria',
+	        value: function updateCriteria(values, name) {
+	            var newCrit = this.state.criteria;
+	            newCrit[name] = values;
+	            this.setState({
+	                criteria: newCrit
+	            });
 	        }
 	    }, {
 	        key: 'render',
@@ -28655,12 +28711,26 @@
 	            return _react2.default.createElement(
 	                'div',
 	                { className: 'filterContainer' },
-	                _react2.default.createElement(SortableList, { className: 'filters', items: this.state.items, onSortEnd: function onSortEnd(event) {
-	                        return _this2.onSortEnd(event);
-	                    }, useDragHandle: true }),
+	                _react2.default.createElement(
+	                    'ul',
+	                    { onChange: function onChange(event) {
+	                            return _this2.onSortEnd(event);
+	                        }, className: 'filters', useDragHandle: true },
+	                    this.state.items.map(function (value, index) {
+	                        return _react2.default.createElement(
+	                            'li',
+	                            { className: 'filters', key: value },
+	                            _react2.default.createElement(_audioFilter2.default, { value: value, criteriaUpdate: function criteriaUpdate(values, name) {
+	                                    return _this2.updateCriteria(values, name);
+	                                } })
+	                        );
+	                    })
+	                ),
 	                _react2.default.createElement(
 	                    'button',
-	                    null,
+	                    { onClick: function onClick() {
+	                            return console.log(_this2.state.criteria);
+	                        } /*SpotifyApi.getCurrentUserId(this.state.token, "Awesome spotify api playlist")*/ },
 	                    'Create playlist'
 	                )
 	            );
@@ -35970,6 +36040,10 @@
 
 	var _reactSortableHoc = __webpack_require__(256);
 
+	var _spotifyApi = __webpack_require__(246);
+
+	var _spotifyApi2 = _interopRequireDefault(_spotifyApi);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -36009,7 +36083,8 @@
 	      this.setState({
 	        values: values
 	      });
-	      console.log(component.props.name, values);
+	      console.log(this.props.values);
+	      this.props.criteriaUpdate(this.state.values, this.props.value);
 	    }
 	  }, {
 	    key: 'render',

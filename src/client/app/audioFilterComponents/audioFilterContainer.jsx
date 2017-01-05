@@ -2,32 +2,29 @@ import React from 'react';
 import {SortableContainer, SortableElement, arrayMove,SortableHandle } from 'react-sortable-hoc';
 import {render} from 'react-dom';
 import AudioFilter from './audioFilter.jsx';
+import SpotifyApi from '../spotifyApi.jsx';
 
+// const SortableItem = SortableElement(({value}) => 
+//     (
+            
+//     )
+// );
 
-
-const SortableItem = SortableElement(({value}) => 
-    (
-            <li className="filters">
-                    <AudioFilter value={value} />
-            </li>
-    )
-);
-
-const SortableList = SortableContainer(({items}) => {
-    return (
-        <ul>
-            {items.map((value, index) =>
-                <SortableItem key={`item-${index}`} index={index} value={value} />
-            )}
-        </ul>
-    );
-});
+// const SortableList = SortableContainer(({items}) => {
+//     return (
+//         <ul>
+            
+//         </ul>
+//     );
+// });
 
 class AudioFilterContainer extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            items: ['Dance', 'Instrumental', 'Vocals', 'Energy', 'Beats per minute', 'Audiance included']
+            token: localStorage.getItem('token'),
+            items: ['Dance', 'Instrumental', 'Vocals', 'Energy', 'Beats per minute', 'Audiance included'],
+            criteria: {}
         }
     }
     
@@ -35,13 +32,25 @@ class AudioFilterContainer extends React.Component {
         this.setState({
             items: arrayMove(this.state.items, oldIndex, newIndex)
         });
-        console.log(this.state.items)
+    }
+    updateCriteria(values, name){
+        let newCrit = this.state.criteria
+        newCrit[name] = values;
+        this.setState({
+            criteria : newCrit
+        })
     }
     render() {
         return (
             <div className="filterContainer">
-                <SortableList className="filters" items={this.state.items} onSortEnd={(event)=>this.onSortEnd(event)} useDragHandle={true}/>
-                <button>Create playlist</button>
+                <ul onChange={(event) => this.onSortEnd(event)} className="filters" useDragHandle={true}>
+                    {this.state.items.map((value, index) =>
+                        <li className="filters" key={value}>
+                            <AudioFilter value={value} criteriaUpdate={(values,name) => this.updateCriteria(values,name)}/>
+                        </li>
+                    )}
+                </ul>
+        <button onClick={() => console.log(this.state.criteria)/*SpotifyApi.getCurrentUserId(this.state.token, "Awesome spotify api playlist")*/}>Create playlist</button>
             </div>
         )
     }

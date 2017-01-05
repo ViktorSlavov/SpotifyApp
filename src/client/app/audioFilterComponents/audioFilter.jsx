@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import InputRange from 'react-input-range';
 import {SortableContainer, SortableElement, arrayMove,SortableHandle } from 'react-sortable-hoc';
+import SpotifyApi from '../spotifyApi.jsx';
 
 const DragHandle = SortableHandle(() => <div className="handle"><i className="fa fa-circle-o" aria-hidden="true"></i></div>); 
 
@@ -12,7 +13,7 @@ class AudioFilter extends React.Component {
       values: {
         min: 0,
         max: 100,
-      },
+      }
     };
   }
 
@@ -20,7 +21,8 @@ class AudioFilter extends React.Component {
     this.setState({
       values: values,
     });
-    console.log(component.props.name,values);
+    console.log(this.props.values)
+    this.props.criteriaUpdate(this.state.values, this.props.value)
   }
 
   render() {
