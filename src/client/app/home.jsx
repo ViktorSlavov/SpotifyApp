@@ -9,16 +9,22 @@ class Home extends React.Component {
         super(props);
         this.state = {
             token: localStorage.getItem('token'),
-            top: '',
             artists: '',
             authenticated: '',
             topSliderArtists: [],
-            selectedArtists: [],
         }
     }
    populateSelectedArtists(value){
+       let phSelected = this.state.topSliderArtists;
+       phSelected.map(function(elem){
+           if(elem.name == value.name){
+               elem.selected = !elem.selected;
+               elem.check = (elem.check == "\uf00c" ? '':'\uf00c');
+           }
+           return elem;
+       })
        this.setState({
-           selectedArtists: value
+           topSliderArtists: phSelected
        })
    }
    componentWillMount(){
@@ -32,6 +38,11 @@ class Home extends React.Component {
                                 <img src={elem.images[0].url} width="100" height="100"/>
                             </li>
                     )
+                })
+                results = results.map(function(elem){
+                    elem.selected = false;
+                    elem.check = '';
+                    return elem;
                 })
                 that.setState({
                     artists: topArtists,
@@ -48,7 +59,7 @@ class Home extends React.Component {
             content = (
                 <div>
                     <SliderArtists artists={this.state.topSliderArtists} populate={(x)=>that.populateSelectedArtists(x)}/>
-                    <SelectedArtists selected={this.state.selectedArtists}/>
+                    <SelectedArtists selected={this.state.topSliderArtists}/>
                 </div>
             )
         } else {
