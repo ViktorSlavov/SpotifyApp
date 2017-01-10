@@ -28572,11 +28572,15 @@
 	        key: 'render',
 	        value: function render() {
 	            var content = this.props.selected.map(function (elem) {
+<<<<<<< HEAD
 	                if (elem.selected == true) {
+=======
+	                if (elem.checked == true) {
+>>>>>>> 23717f08631eb3da31c28770b79cb6053baa8314
 	                    return _react2.default.createElement(
 	                        'p',
 	                        null,
-	                        elem.name
+	                        elem.artist
 	                    );
 	                }
 	            });
