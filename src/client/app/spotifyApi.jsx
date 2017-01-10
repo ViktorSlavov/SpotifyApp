@@ -46,7 +46,6 @@ let SpotifyApi = {
         })
     },
     getCurrentUserId : function(token, playlistName, songs){
-        let that = this;
         return new Promise(function(resolve,reject){
             let req = new XMLHttpRequest();
             let auth = `Bearer ${token}`;
@@ -70,7 +69,60 @@ let SpotifyApi = {
     filterTracks : function(tracks){
         let count = 50;
         
-    }
+    },
+    getArtistAlbums : function(token, artist){
+        console.log(artist);
+        return new Promise(function(resolve,reject){
+            let req = new XMLHttpRequest();
+            let auth = `Bearer ${token}`;
+            let id = 'https://api.spotify.com/v1/artists/'+artist+'/albums';
+            req.onreadystatechange = function(data) {
+                if (this.readyState == 4 && this.status == 200) {
+                    resolve(JSON.parse(data.currentTarget.response).items);
+                } else if (this.readyState == 4 && this.status != 200){
+                    reject('Error');
+                }
+            };
+            req.open("GET", id,true);
+            req.setRequestHeader('Authorization',auth,true)
+            req.send();
+        })
+    },
+    getAlbumTracks : function(token, album){
+        return new Promise(function(resolve,reject){
+            let req = new XMLHttpRequest();
+            let auth = `Bearer ${token}`;
+            let id = 'https://api.spotify.com/v1/albums/'+album;
+            req.onreadystatechange = function(data) {
+                if (this.readyState == 4 && this.status == 200) {
+                    resolve(JSON.parse(data.currentTarget.response).tracks.items);
+                } else if (this.readyState == 4 && this.status != 200){
+                    reject('Error');
+                }
+            };
+            req.open("GET", id,true);
+            req.setRequestHeader('Authorization',auth,true)
+            req.send();
+        })
+    },
+    getTrackFeatures : function(token, tracks){
+        return new Promise(function(resolve,reject){
+            let req = new XMLHttpRequest();
+            let auth = `Bearer ${token}`;
+            let id = 'https://api.spotify.com/v1/audio-features/?ids='+tracks;
+            req.onreadystatechange = function(data) {
+                if (this.readyState == 4 && this.status == 200) {
+                    resolve(JSON.parse(data.currentTarget.response).audio_features);
+                } else if (this.readyState == 4 && this.status != 200){
+                    reject('Error');
+                }
+            };
+            req.open("GET", id,true);
+            req.setRequestHeader('Authorization',auth,true)
+            req.send();
+        })
+    },
+
     
 }
 

@@ -13,6 +13,7 @@ class Home extends React.Component {
             artists: '',
             authenticated: '',
             topSliderArtists: [],
+            songs: []
         }
         
     }
@@ -58,6 +59,7 @@ class Home extends React.Component {
                 results = results.map(function(elem){
                     elem.selected = false;
                     elem.check = '';
+                    elem.songsCheck = false;
                     return elem;
                 })
                 that.setState({

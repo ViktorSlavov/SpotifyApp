@@ -26,7 +26,8 @@ class AudioFilterContainer extends React.Component {
             artists: [],
             token: localStorage.getItem('token'),
             items: ['Dance', 'Instrumental', 'Vocals', 'Energy', 'Beats per minute', 'Audiance included'],
-            criteria: {}
+            criteria: {},
+            songs: []
         }
     }
     
@@ -42,6 +43,65 @@ class AudioFilterContainer extends React.Component {
             criteria : newCrit
         })
     }
+    getAllSongs(){
+        let that = this;
+        const flatten = arr => arr.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
+        let missingArtists = this.state.artists;
+        console.log(missingArtists);
+        missingArtists.map(function(elem){
+            if(elem.songCheck == true){
+                elem.skipCheck == true;
+            }
+            return elem
+        })
+        console.log(this.state.artists)
+        let allSongs = [];
+        let albums = [];
+        for (let i=0; i<missingArtists.length; i++){
+            if(missingArtists[i].skipCheck != true && missingArtists[i].selected == true){
+                let req = SpotifyApi.getArtistAlbums(this.state.token, missingArtists[i].id);
+                albums.push(req);
+            }
+        }
+        Promise.all(albums).then(function(results){
+            let tracks = [];
+            results = flatten(results)
+            for(let i=0; i<results.length; i++){
+                let req = SpotifyApi.getAlbumTracks(that.state.token, results[i].id);
+                tracks.push(req);
+            }
+            Promise.all(tracks).then(function(results){
+                results = flatten(results);
+                console.log("Tracks results : ", results)
+                let trackFeatures = [];
+                let stringOfIds = "";
+                for(let i=0; i<results.length; i+=99){
+                    stringOfIds = results.slice(i,i+99).map(function(elem){ return elem.id}).join(',');
+                    console.log("String of IDs : ", stringOfIds);
+                    let req = SpotifyApi.getTrackFeatures(that.state.token, stringOfIds);
+                    trackFeatures.push(req)
+                }
+                Promise.all(trackFeatures).then(function(results){
+                    console.log(results)
+                    results = flatten(results);
+                    allSongs = results
+                    that.setState({
+                        songs : allSongs
+                    })
+                })
+            })
+            console.log(that.state.songs)
+        })
+        // for(let i=0; i<missingArtists.length; i++){
+        //     SpotifyApi.getArtistAlbums(that.state.token, missingArtists[i].id).then(function(results){
+        //         for(let j=0; j<results.length;j++){
+        //             SpotifyApi.getAlbumTracks(that.state.token, results[i].id).then(function(results){
+        //                 allSongs.push(results);
+        //             })
+        //         }
+        //     })
+        // }
+    }
     componentWillMount(){
         let that = this;
         let artistsArray = this.props.location.state.artists;
@@ -49,6 +109,12 @@ class AudioFilterContainer extends React.Component {
         this.setState({
             artists: artistsArray
         })
+        
+        
+    }
+    componentDidMount(){
+        this.getAllSongs();
+        console.log(this.state.songs);
     }
     render() {
         let that = this;
@@ -61,6 +127,7 @@ class AudioFilterContainer extends React.Component {
                         </li>
                     )}
                 </ul>
+        <button onClick={() => console.log(this.state.songs)}>Console log</button>
         <button><Link to={{ pathname: 'home', state: { artists: that.state.artists} }}>Back to selection</Link></button>
         <button onClick={() => console.log(this.state.criteria)/*SpotifyApi.getCurrentUserId(this.state.token, "Awesome spotify api playlist")*/}>Create playlist</button>
             </div>
