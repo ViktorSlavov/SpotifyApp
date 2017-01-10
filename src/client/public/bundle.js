@@ -27745,7 +27745,7 @@
 	        value: function render() {
 	            var that = this;
 	            var content = this.props.artists.map(function (elem) {
-	                console.log(elem.check, elem.selected);
+
 	                return _react2.default.createElement(_slideArtist2.default, { src: elem.images[0].url, name: elem.name, check: elem.check, key: elem.images[0].url, populate: function populate(x) {
 	                        return that.populateSelectedArtists(x);
 	                    } }); //USE SlideArtist here
@@ -27753,9 +27753,9 @@
 	            return _react2.default.createElement(
 	                _reactCoverflow2.default,
 	                {
-	                    width: 500,
-	                    height: 400,
-	                    displayQuantityOfSide: 1,
+	                    width: 1000,
+	                    height: 600,
+	                    displayQuantityOfSide: 2,
 	                    navigation: false,
 	                    enableHeading: true
 	                },
@@ -28569,25 +28569,46 @@
 	    }
 
 	    _createClass(SelectedArtists, [{
+	        key: 'updateSelected',
+	        value: function updateSelected(e) {
+	            e.stopPropagation();
+	            var targetName = e.target.parentElement.value;
+	            var phSelected = this.props.selected.map(function (elem) {
+	                if (elem.name == targetName) {
+	                    elem.selected = !elem.selected;
+	                    elem.check = elem.check == '\uF00C' ? '' : '\uF00C';
+	                }
+	            });
+	            this.props.populate(phSelected);
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
+	            var that = this;
 	            var content = this.props.selected.map(function (elem) {
-<<<<<<< HEAD
 	                if (elem.selected == true) {
-=======
-	                if (elem.checked == true) {
->>>>>>> 23717f08631eb3da31c28770b79cb6053baa8314
 	                    return _react2.default.createElement(
-	                        'p',
+	                        'li',
 	                        null,
-	                        elem.artist
+	                        elem.name,
+	                        _react2.default.createElement(
+	                            'button',
+	                            { value: elem.name, className: 'buttonRemove' },
+	                            _react2.default.createElement('i', { onClick: function onClick(e) {
+	                                    return that.updateSelected(e);
+	                                }, className: 'fa fa-times fa-2x' })
+	                        )
 	                    );
 	                }
 	            });
 	            return _react2.default.createElement(
 	                'div',
-	                null,
-	                content
+	                { className: 'container' },
+	                _react2.default.createElement(
+	                    'ul',
+	                    null,
+	                    content
+	                )
 	            );
 	        }
 	    }]);
@@ -38081,7 +38102,7 @@
 
 
 	// module
-	exports.push([module.id, ".filters {\n  list-style-type: none !important; }\n\n.handle {\n  margin-left: -2em;\n  float: left; }\n\n.input {\n  margin-left: 2em; }\n\n.form {\n  margin: auto;\n  display: block;\n  text-align: center; }\n\nul {\n  padding: 0; }\n\n.filterContainer {\n  text-align: center; }\n\nbutton {\n  margin: auto;\n  display: block; }\n\n.slider {\n  margin: 0 auto;\n  padding: 40px;\n  width: 80%;\n  color: #333;\n  background: #419be0; }\n\n.artistContainer {\n  margin-top: -4em; }\n\n.coverflow__container__1P-xE {\n  background: black !important; }\n\nsvg text {\n  font-family: FontAwesome; }\n\n.badge {\n  top: 5em;\n  position: relative;\n  left: 11em; }\n\n.InputRange-slider {\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: #01a982;\n  border: 1px solid #01a982;\n  border-radius: 100%;\n  cursor: pointer;\n  display: block;\n  height: 1rem;\n  margin-left: -0.5rem;\n  margin-top: -0.65rem;\n  outline: none;\n  position: absolute;\n  top: 50%;\n  transition: -webkit-transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  width: 1rem; }\n\n.InputRange-slider:active {\n  -webkit-transform: scale(1.3);\n  transform: scale(1.3); }\n\n.InputRange-slider:focus {\n  box-shadow: 0 0 0 5px rgba(63, 81, 181, 0.2); }\n\n.InputRange.is-disabled .InputRange-slider {\n  background: #cccccc;\n  border: 1px solid #cccccc;\n  box-shadow: none;\n  -webkit-transform: none;\n  transform: none; }\n\n.InputRange-sliderContainer {\n  transition: left 0.3s ease-out; }\n\n.InputRange-label {\n  color: #aaaaaa;\n  font-family: \"Helvetica Neue\", san-serif;\n  font-size: 0.8rem;\n  white-space: nowrap; }\n\n.InputRange-label--min,\n.InputRange-label--max {\n  bottom: -1.4rem;\n  position: absolute; }\n\n.InputRange-label--min {\n  left: 0; }\n\n.InputRange-label--max {\n  right: 0; }\n\n.InputRange-label--value {\n  position: absolute;\n  top: -1.8rem; }\n\n.InputRange-labelContainer {\n  left: -50%;\n  position: relative; }\n\n.InputRange-label--max .InputRange-labelContainer {\n  left: 50%; }\n\n.InputRange-track {\n  background: #eeeeee;\n  border-radius: 0.3rem;\n  cursor: pointer;\n  display: block;\n  height: 0.3rem;\n  position: relative;\n  transition: left 0.3s ease-out, width 0.3s ease-out; }\n\n.InputRange.is-disabled .InputRange-track {\n  background: #eeeeee; }\n\n.InputRange-track--container {\n  left: 0;\n  margin-top: -0.15rem;\n  position: absolute;\n  right: 0;\n  top: 50%; }\n\n.InputRange-track--active {\n  background: #01a982; }\n\n.InputRange {\n  height: 1rem;\n  position: relative;\n  width: 100%; }\n", ""]);
+	exports.push([module.id, ".filters {\n  list-style-type: none !important; }\n\n.handle {\n  margin-left: -2em;\n  float: left; }\n\n.input {\n  margin-left: 2em; }\n\n.form {\n  margin: auto;\n  display: block;\n  text-align: center; }\n\nul {\n  padding: 0; }\n\n.filterContainer {\n  text-align: center; }\n\nbutton {\n  margin: auto;\n  display: block; }\n\n.slider {\n  margin: 0 auto;\n  padding: 40px;\n  width: 80%;\n  color: #333;\n  background: #419be0; }\n\n.coverflow__cover__25-7e {\n  box-shadow: none !important; }\n\n.artistContainer {\n  margin-top: -4em; }\n\n.coverflow__container__1P-xE {\n  background: black !important; }\n\nsvg text {\n  font-family: FontAwesome; }\n\n.badge {\n  top: 5em;\n  position: relative;\n  left: 11em; }\n\n.selectedArtists {\n  background-size: contain;\n  width: 5em;\n  height: 6em;\n  background-repeat: no-repeat;\n  opacity: 0.9; }\n\n.buttonRemove {\n  background: none;\n  border: none; }\n\n.InputRange-slider {\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: #01a982;\n  border: 1px solid #01a982;\n  border-radius: 100%;\n  cursor: pointer;\n  display: block;\n  height: 1rem;\n  margin-left: -0.5rem;\n  margin-top: -0.65rem;\n  outline: none;\n  position: absolute;\n  top: 50%;\n  transition: -webkit-transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  width: 1rem; }\n\n.InputRange-slider:active {\n  -webkit-transform: scale(1.3);\n  transform: scale(1.3); }\n\n.InputRange-slider:focus {\n  box-shadow: 0 0 0 5px rgba(63, 81, 181, 0.2); }\n\n.InputRange.is-disabled .InputRange-slider {\n  background: #cccccc;\n  border: 1px solid #cccccc;\n  box-shadow: none;\n  -webkit-transform: none;\n  transform: none; }\n\n.InputRange-sliderContainer {\n  transition: left 0.3s ease-out; }\n\n.InputRange-label {\n  color: #aaaaaa;\n  font-family: \"Helvetica Neue\", san-serif;\n  font-size: 0.8rem;\n  white-space: nowrap; }\n\n.InputRange-label--min,\n.InputRange-label--max {\n  bottom: -1.4rem;\n  position: absolute; }\n\n.InputRange-label--min {\n  left: 0; }\n\n.InputRange-label--max {\n  right: 0; }\n\n.InputRange-label--value {\n  position: absolute;\n  top: -1.8rem; }\n\n.InputRange-labelContainer {\n  left: -50%;\n  position: relative; }\n\n.InputRange-label--max .InputRange-labelContainer {\n  left: 50%; }\n\n.InputRange-track {\n  background: #eeeeee;\n  border-radius: 0.3rem;\n  cursor: pointer;\n  display: block;\n  height: 0.3rem;\n  position: relative;\n  transition: left 0.3s ease-out, width 0.3s ease-out; }\n\n.InputRange.is-disabled .InputRange-track {\n  background: #eeeeee; }\n\n.InputRange-track--container {\n  left: 0;\n  margin-top: -0.15rem;\n  position: absolute;\n  right: 0;\n  top: 50%; }\n\n.InputRange-track--active {\n  background: #01a982; }\n\n.InputRange {\n  height: 1rem;\n  position: relative;\n  width: 100%; }\n", ""]);
 
 	// exports
 

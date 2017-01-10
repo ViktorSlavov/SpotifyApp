@@ -19,14 +19,14 @@ class SliderArtists extends React.Component{
     render() {
       let that = this;
       let content = this.props.artists.map(function(elem){
-        console.log(elem.check,elem.selected);
+       
             return <SlideArtist src={elem.images[0].url} name={elem.name} check={elem.check} key={elem.images[0].url} populate={(x)=>that.populateSelectedArtists(x)}/> //USE SlideArtist here
       })
       return (
         <Coverflow
-          width={500}
-          height={400}
-          displayQuantityOfSide={1}
+          width={1000}
+          height={600}
+          displayQuantityOfSide={2}
           navigation={false}
           enableHeading={true}
           >
