@@ -22,6 +22,7 @@ class AudioFilterContainer extends React.Component {
     constructor(props){
         super(props);
         this.state = {
+            artists: this.props.Artists,
             token: localStorage.getItem('token'),
             items: ['Dance', 'Instrumental', 'Vocals', 'Energy', 'Beats per minute', 'Audiance included'],
             criteria: {}
@@ -38,6 +39,12 @@ class AudioFilterContainer extends React.Component {
         newCrit[name] = values;
         this.setState({
             criteria : newCrit
+        })
+    }
+    componentDidMount(){
+        let that = this;
+        this.setState({
+            artists: this.props.location.state.artists
         })
     }
     render() {

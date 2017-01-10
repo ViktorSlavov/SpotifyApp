@@ -28,6 +28,7 @@ class Home extends React.Component {
        })
    }
    componentWillMount(){
+  
        let topArtists;
             let that = this;
             SpotifyApi.getTop(this.state.token).then(function(results){
@@ -60,6 +61,7 @@ class Home extends React.Component {
                 <div>
                     <SliderArtists artists={this.state.topSliderArtists} populate={(x)=>that.populateSelectedArtists(x)}/>
                     <SelectedArtists selected={this.state.topSliderArtists}/>
+                    <Link to={{ pathname: '/filter', state: { artists: that.state.topSliderArtists } }} >Go to filters</Link>
                 </div>
             )
         } else {
