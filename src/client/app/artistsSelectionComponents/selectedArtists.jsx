@@ -10,7 +10,6 @@ class SelectedArtists extends React.Component {
 
     render(){
         let content = this.props.selected.map(function(elem){
-             console.log(elem);
              if(elem.selected == true){
                 return <p>{elem.name}</p>
             }

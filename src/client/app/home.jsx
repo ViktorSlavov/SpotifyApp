@@ -5,6 +5,7 @@ import SliderArtists from './artistsSelectionComponents/sliderArtists.jsx';
 import SearchArtists from './artistsSelectionComponents/searchArtists.jsx';
 import SelectedArtists from './artistsSelectionComponents/selectedArtists.jsx';
 class Home extends React.Component {
+    
     constructor(props){
         super(props);
         this.state = {
@@ -13,6 +14,7 @@ class Home extends React.Component {
             authenticated: '',
             topSliderArtists: [],
         }
+        
     }
    populateSelectedArtists(value){
        let phSelected = this.state.topSliderArtists;
@@ -26,10 +28,23 @@ class Home extends React.Component {
        this.setState({
            topSliderArtists: phSelected
        })
+       console.log(this.state.topSliderArtists)
    }
    componentWillMount(){
-  
-       let topArtists;
+       let selected;
+        try {
+            console.log("Try state", this.props.location.state.artists)
+            selected = this.props.location.state.artists;
+        }
+        catch(e){
+            console.log(e)
+        }
+        if (selected != undefined){
+            this.setState({
+                topSliderArtists: selected
+            })
+        } else {
+            let topArtists;
             let that = this;
             SpotifyApi.getTop(this.state.token).then(function(results){
                 topArtists = results.map(function(elem){
@@ -49,7 +64,11 @@ class Home extends React.Component {
                     artists: topArtists,
                     topSliderArtists: results,
                 })
-            })   
+            })
+        }
+    
+       
+        console.log(this.state.topSliderArtists)
    }     
     
     render(){
@@ -61,7 +80,9 @@ class Home extends React.Component {
                 <div>
                     <SliderArtists artists={this.state.topSliderArtists} populate={(x)=>that.populateSelectedArtists(x)}/>
                     <SelectedArtists selected={this.state.topSliderArtists}/>
-                    <Link to={{ pathname: '/filter', state: { artists: that.state.topSliderArtists } }} >Go to filters</Link>
+                    <button>
+                    <Link to={{ pathname: 'filter', state: { artists: that.state.topSliderArtists } }} >Create playlist</Link>
+                    </button>
                 </div>
             )
         } else {

@@ -14,7 +14,6 @@ class SliderArtists extends React.Component{
     }
     populateSelectedArtists(value){
        this.props.populate(value);  
-            
     }
 
     render() {

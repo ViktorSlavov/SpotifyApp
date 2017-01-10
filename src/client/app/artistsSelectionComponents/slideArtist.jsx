@@ -5,7 +5,7 @@ class SlideArtist extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            check: '',
+            check: '',//this.props.checked,
         }
     }
 
@@ -41,5 +41,6 @@ class SlideArtist extends React.Component {
         )
     }
 }
+
 
 export default SlideArtist; 

@@ -27420,6 +27420,7 @@
 	            authenticated: '',
 	            topSliderArtists: []
 	        };
+
 	        return _this;
 	    }
 
@@ -27437,36 +27438,55 @@
 	            this.setState({
 	                topSliderArtists: phSelected
 	            });
+	            console.log(this.state.topSliderArtists);
 	        }
 	    }, {
 	        key: 'componentWillMount',
 	        value: function componentWillMount() {
+	            var _this2 = this;
 
-	            var topArtists = void 0;
-	            var that = this;
-	            _spotifyApi2.default.getTop(this.state.token).then(function (results) {
-	                topArtists = results.map(function (elem) {
-	                    return _react2.default.createElement(
-	                        'li',
-	                        { key: elem.id, id: elem.id },
-	                        _react2.default.createElement(
-	                            'p',
-	                            null,
-	                            elem.name
-	                        ),
-	                        _react2.default.createElement('img', { src: elem.images[0].url, width: '100', height: '100' })
-	                    );
+	            var selected = void 0;
+	            try {
+	                console.log("Try state", this.props.location.state.artists);
+	                selected = this.props.location.state.artists;
+	            } catch (e) {
+	                console.log(e);
+	            }
+	            if (selected != undefined) {
+	                this.setState({
+	                    topSliderArtists: selected
 	                });
-	                results = results.map(function (elem) {
-	                    elem.selected = false;
-	                    elem.check = '';
-	                    return elem;
-	                });
-	                that.setState({
-	                    artists: topArtists,
-	                    topSliderArtists: results
-	                });
-	            });
+	            } else {
+	                (function () {
+	                    var topArtists = void 0;
+	                    var that = _this2;
+	                    _spotifyApi2.default.getTop(_this2.state.token).then(function (results) {
+	                        topArtists = results.map(function (elem) {
+	                            return _react2.default.createElement(
+	                                'li',
+	                                { key: elem.id, id: elem.id },
+	                                _react2.default.createElement(
+	                                    'p',
+	                                    null,
+	                                    elem.name
+	                                ),
+	                                _react2.default.createElement('img', { src: elem.images[0].url, width: '100', height: '100' })
+	                            );
+	                        });
+	                        results = results.map(function (elem) {
+	                            elem.selected = false;
+	                            elem.check = '';
+	                            return elem;
+	                        });
+	                        that.setState({
+	                            artists: topArtists,
+	                            topSliderArtists: results
+	                        });
+	                    });
+	                })();
+	            }
+
+	            console.log(this.state.topSliderArtists);
 	        }
 	    }, {
 	        key: 'render',
@@ -27483,9 +27503,13 @@
 	                        } }),
 	                    _react2.default.createElement(_selectedArtists2.default, { selected: this.state.topSliderArtists }),
 	                    _react2.default.createElement(
-	                        _reactRouter.Link,
-	                        { to: { pathname: '/filter', state: { artists: that.state.topSliderArtists } } },
-	                        'Go to filters'
+	                        'button',
+	                        null,
+	                        _react2.default.createElement(
+	                            _reactRouter.Link,
+	                            { to: { pathname: 'filter', state: { artists: that.state.topSliderArtists } } },
+	                            'Create playlist'
+	                        )
 	                    )
 	                );
 	            } else {
@@ -28357,8 +28381,7 @@
 	        var _this = _possibleConstructorReturn(this, (SlideArtist.__proto__ || Object.getPrototypeOf(SlideArtist)).call(this, props));
 
 	        _this.state = {
-	            check: ''
-	        };
+	            check: '' };
 	        return _this;
 	    }
 
@@ -28549,7 +28572,6 @@
 	        key: 'render',
 	        value: function render() {
 	            var content = this.props.selected.map(function (elem) {
-	                console.log(elem);
 	                if (elem.selected == true) {
 	                    return _react2.default.createElement(
 	                        'p',
@@ -28649,6 +28671,8 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _reactRouter = __webpack_require__(179);
+
 	var _reactSortableHoc = __webpack_require__(256);
 
 	var _reactDom = __webpack_require__(32);
@@ -28692,7 +28716,7 @@
 	        var _this = _possibleConstructorReturn(this, (AudioFilterContainer.__proto__ || Object.getPrototypeOf(AudioFilterContainer)).call(this, props));
 
 	        _this.state = {
-	            artists: _this.props.Artists,
+	            artists: [],
 	            token: localStorage.getItem('token'),
 	            items: ['Dance', 'Instrumental', 'Vocals', 'Energy', 'Beats per minute', 'Audiance included'],
 	            criteria: {}
@@ -28720,11 +28744,13 @@
 	            });
 	        }
 	    }, {
-	        key: 'componentDidMount',
-	        value: function componentDidMount() {
+	        key: 'componentWillMount',
+	        value: function componentWillMount() {
 	            var that = this;
+	            var artistsArray = this.props.location.state.artists;
+	            console.log(" In Filter : ", artistsArray);
 	            this.setState({
-	                artists: this.props.location.state.artists
+	                artists: artistsArray
 	            });
 	        }
 	    }, {
@@ -28732,6 +28758,7 @@
 	        value: function render() {
 	            var _this2 = this;
 
+	            var that = this;
 	            return _react2.default.createElement(
 	                'div',
 	                { className: 'filterContainer' },
@@ -28739,7 +28766,7 @@
 	                    'ul',
 	                    { onChange: function onChange(event) {
 	                            return _this2.onSortEnd(event);
-	                        }, className: 'filters', useDragHandle: true },
+	                        }, className: 'filters' },
 	                    this.state.items.map(function (value, index) {
 	                        return _react2.default.createElement(
 	                            'li',
@@ -28749,6 +28776,15 @@
 	                                } })
 	                        );
 	                    })
+	                ),
+	                _react2.default.createElement(
+	                    'button',
+	                    null,
+	                    _react2.default.createElement(
+	                        _reactRouter.Link,
+	                        { to: { pathname: 'home', state: { artists: that.state.artists } } },
+	                        'Back to selection'
+	                    )
 	                ),
 	                _react2.default.createElement(
 	                    'button',
