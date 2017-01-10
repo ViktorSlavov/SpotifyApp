@@ -28549,12 +28549,11 @@
 	        key: 'render',
 	        value: function render() {
 	            var content = this.props.selected.map(function (elem) {
-	                console.log(elem);
-	                if (elem.selected == true) {
+	                if (elem.checked == true) {
 	                    return _react2.default.createElement(
 	                        'p',
 	                        null,
-	                        elem.name
+	                        elem.artist
 	                    );
 	                }
 	            });
