@@ -27418,7 +27418,8 @@
 	            token: localStorage.getItem('token'),
 	            artists: '',
 	            authenticated: '',
-	            topSliderArtists: []
+	            topSliderArtists: [],
+	            songs: []
 	        };
 
 	        return _this;
@@ -27476,6 +27477,7 @@
 	                        results = results.map(function (elem) {
 	                            elem.selected = false;
 	                            elem.check = '';
+	                            elem.songsCheck = false;
 	                            return elem;
 	                        });
 	                        that.setState({
@@ -27592,7 +27594,6 @@
 	        });
 	    },
 	    getCurrentUserId: function getCurrentUserId(token, playlistName, songs) {
-	        var that = this;
 	        return new Promise(function (resolve, reject) {
 	            var req = new XMLHttpRequest();
 	            var auth = 'Bearer ' + token;
@@ -27614,6 +27615,58 @@
 	    },
 	    filterTracks: function filterTracks(tracks) {
 	        var count = 50;
+	    },
+	    getArtistAlbums: function getArtistAlbums(token, artist) {
+	        console.log(artist);
+	        return new Promise(function (resolve, reject) {
+	            var req = new XMLHttpRequest();
+	            var auth = 'Bearer ' + token;
+	            var id = 'https://api.spotify.com/v1/artists/' + artist + '/albums';
+	            req.onreadystatechange = function (data) {
+	                if (this.readyState == 4 && this.status == 200) {
+	                    resolve(JSON.parse(data.currentTarget.response).items);
+	                } else if (this.readyState == 4 && this.status != 200) {
+	                    reject('Error');
+	                }
+	            };
+	            req.open("GET", id, true);
+	            req.setRequestHeader('Authorization', auth, true);
+	            req.send();
+	        });
+	    },
+	    getAlbumTracks: function getAlbumTracks(token, album) {
+	        return new Promise(function (resolve, reject) {
+	            var req = new XMLHttpRequest();
+	            var auth = 'Bearer ' + token;
+	            var id = 'https://api.spotify.com/v1/albums/' + album;
+	            req.onreadystatechange = function (data) {
+	                if (this.readyState == 4 && this.status == 200) {
+	                    resolve(JSON.parse(data.currentTarget.response).tracks.items);
+	                } else if (this.readyState == 4 && this.status != 200) {
+	                    reject('Error');
+	                }
+	            };
+	            req.open("GET", id, true);
+	            req.setRequestHeader('Authorization', auth, true);
+	            req.send();
+	        });
+	    },
+	    getTrackFeatures: function getTrackFeatures(token, tracks) {
+	        return new Promise(function (resolve, reject) {
+	            var req = new XMLHttpRequest();
+	            var auth = 'Bearer ' + token;
+	            var id = 'https://api.spotify.com/v1/audio-features/?ids=' + tracks;
+	            req.onreadystatechange = function (data) {
+	                if (this.readyState == 4 && this.status == 200) {
+	                    resolve(JSON.parse(data.currentTarget.response).audio_features);
+	                } else if (this.readyState == 4 && this.status != 200) {
+	                    reject('Error');
+	                }
+	            };
+	            req.open("GET", id, true);
+	            req.setRequestHeader('Authorization', auth, true);
+	            req.send();
+	        });
 	    }
 
 	};
@@ -28744,7 +28797,8 @@
 	            artists: [],
 	            token: localStorage.getItem('token'),
 	            items: ['Dance', 'Instrumental', 'Vocals', 'Energy', 'Beats per minute', 'Audiance included'],
-	            criteria: {}
+	            criteria: {},
+	            songs: []
 	        };
 	        return _this;
 	    }
@@ -28769,6 +28823,73 @@
 	            });
 	        }
 	    }, {
+	        key: 'getAllSongs',
+	        value: function getAllSongs() {
+	            var that = this;
+	            var flatten = function flatten(arr) {
+	                return arr.reduce(function (a, b) {
+	                    return a.concat(Array.isArray(b) ? flatten(b) : b);
+	                }, []);
+	            };
+	            var missingArtists = this.state.artists;
+	            console.log(missingArtists);
+	            missingArtists.map(function (elem) {
+	                if (elem.songCheck == true) {
+	                    elem.skipCheck == true;
+	                }
+	                return elem;
+	            });
+	            console.log(this.state.artists);
+	            var allSongs = [];
+	            var albums = [];
+	            for (var i = 0; i < missingArtists.length; i++) {
+	                if (missingArtists[i].skipCheck != true && missingArtists[i].selected == true) {
+	                    var req = _spotifyApi2.default.getArtistAlbums(this.state.token, missingArtists[i].id);
+	                    albums.push(req);
+	                }
+	            }
+	            Promise.all(albums).then(function (results) {
+	                var tracks = [];
+	                results = flatten(results);
+	                for (var _i = 0; _i < results.length; _i++) {
+	                    var _req = _spotifyApi2.default.getAlbumTracks(that.state.token, results[_i].id);
+	                    tracks.push(_req);
+	                }
+	                Promise.all(tracks).then(function (results) {
+	                    results = flatten(results);
+	                    console.log("Tracks results : ", results);
+	                    var trackFeatures = [];
+	                    var stringOfIds = "";
+	                    for (var _i2 = 0; _i2 < results.length; _i2 += 99) {
+	                        stringOfIds = results.slice(_i2, _i2 + 99).map(function (elem) {
+	                            return elem.id;
+	                        }).join(',');
+	                        console.log("String of IDs : ", stringOfIds);
+	                        var _req2 = _spotifyApi2.default.getTrackFeatures(that.state.token, stringOfIds);
+	                        trackFeatures.push(_req2);
+	                    }
+	                    Promise.all(trackFeatures).then(function (results) {
+	                        console.log(results);
+	                        results = flatten(results);
+	                        allSongs = results;
+	                        that.setState({
+	                            songs: allSongs
+	                        });
+	                    });
+	                });
+	                console.log(that.state.songs);
+	            });
+	            // for(let i=0; i<missingArtists.length; i++){
+	            //     SpotifyApi.getArtistAlbums(that.state.token, missingArtists[i].id).then(function(results){
+	            //         for(let j=0; j<results.length;j++){
+	            //             SpotifyApi.getAlbumTracks(that.state.token, results[i].id).then(function(results){
+	            //                 allSongs.push(results);
+	            //             })
+	            //         }
+	            //     })
+	            // }
+	        }
+	    }, {
 	        key: 'componentWillMount',
 	        value: function componentWillMount() {
 	            var that = this;
@@ -28777,6 +28898,12 @@
 	            this.setState({
 	                artists: artistsArray
 	            });
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            this.getAllSongs();
+	            console.log(this.state.songs);
 	        }
 	    }, {
 	        key: 'render',
@@ -28801,6 +28928,13 @@
 	                                } })
 	                        );
 	                    })
+	                ),
+	                _react2.default.createElement(
+	                    'button',
+	                    { onClick: function onClick() {
+	                            return console.log(_this2.state.songs);
+	                        } },
+	                    'Console log'
 	                ),
 	                _react2.default.createElement(
 	                    'button',
