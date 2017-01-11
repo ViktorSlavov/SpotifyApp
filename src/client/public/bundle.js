@@ -27500,10 +27500,12 @@
 	                content = _react2.default.createElement(
 	                    'div',
 	                    null,
-	                    _react2.default.createElement(_sliderArtists2.default, { artists: this.state.topSliderArtists, populate: function populate(x) {
-	                            return that.populateSelectedArtists(x);
+	                    _react2.default.createElement(_sliderArtists2.default, { artists: this.state.topSliderArtists, populate: function populate(elem) {
+	                            return that.populateSelectedArtists(elem);
 	                        } }),
-	                    _react2.default.createElement(_selectedArtists2.default, { selected: this.state.topSliderArtists }),
+	                    _react2.default.createElement(_selectedArtists2.default, { populate: function populate(elem) {
+	                            return that.populateSelectedArtists(elem);
+	                        }, selected: this.state.topSliderArtists }),
 	                    _react2.default.createElement(
 	                        'button',
 	                        null,

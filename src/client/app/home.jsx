@@ -80,8 +80,8 @@ class Home extends React.Component {
             
             content = (
                 <div>
-                    <SliderArtists artists={this.state.topSliderArtists} populate={(x)=>that.populateSelectedArtists(x)}/>
-                    <SelectedArtists selected={this.state.topSliderArtists}/>
+                    <SliderArtists artists={this.state.topSliderArtists} populate={(elem)=>that.populateSelectedArtists(elem)}/>
+                    <SelectedArtists populate={(elem)=>that.populateSelectedArtists(elem)} selected={this.state.topSliderArtists}/>
                     <button>
                     <Link to={{ pathname: 'filter', state: { artists: that.state.topSliderArtists } }} >Create playlist</Link>
                     </button>
