@@ -25,18 +25,18 @@ class SelectedArtists extends React.Component {
         let content = this.props.selected.map(function(elem){
              if(elem.selected == true){                
                 return (
-                    <li>
-                       {elem.name}
-                       <button value={elem.name} className="buttonRemove"><i  onClick={(e)=>that.updateSelected(e)} className="fa fa-times fa-2x"></i></button>
-                    </li>
+                    <div>
+                        <span className="left">{elem.name}</span>
+                        <button value={elem.name} className="buttonRemove left"><i onClick={(e)=>that.updateSelected(e)} className="fa fa-times fa-1x"></i></button>
+                    </div>
                 )
             }
         })
         return (
             <div className="container">
-                <ul>
+                
                     {content}
-                </ul>
+               
             </div>
         )
     }
