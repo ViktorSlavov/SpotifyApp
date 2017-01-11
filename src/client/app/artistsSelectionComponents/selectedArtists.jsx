@@ -26,8 +26,8 @@ class SelectedArtists extends React.Component {
              if(elem.selected == true){                
                 return (
                     <div>
-                        <span class="left">{elem.name}</span>
-                        <button value={elem.name} class="buttonRemove left"><i class="fa fa-times fa-1x"></i></button>
+                        <span className="left">{elem.name}</span>
+                        <button value={elem.name} className="buttonRemove left"><i onClick={(e)=>that.updateSelected(e)} className="fa fa-times fa-1x"></i></button>
                     </div>
                 )
             }

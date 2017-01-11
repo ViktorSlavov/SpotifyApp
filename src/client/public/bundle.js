@@ -27226,7 +27226,7 @@
 /* 243 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -27256,11 +27256,30 @@
 	    }
 
 	    _createClass(Main, [{
-	        key: 'render',
+	        key: "render",
 	        value: function render() {
 	            return _react2.default.createElement(
-	                'div',
+	                "div",
 	                null,
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "bannerContainer" },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "skewedBanner" },
+	                        "Artists"
+	                    ),
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "skewedBanner" },
+	                        "Filter"
+	                    ),
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "skewedBanner" },
+	                        "Create your playlist"
+	                    )
+	                ),
 	                this.props.children
 	            );
 	        }
@@ -28643,15 +28662,19 @@
 	            var content = this.props.selected.map(function (elem) {
 	                if (elem.selected == true) {
 	                    return _react2.default.createElement(
-	                        'li',
+	                        'div',
 	                        null,
-	                        elem.name,
+	                        _react2.default.createElement(
+	                            'span',
+	                            { className: 'left' },
+	                            elem.name
+	                        ),
 	                        _react2.default.createElement(
 	                            'button',
-	                            { value: elem.name, className: 'buttonRemove' },
+	                            { value: elem.name, className: 'buttonRemove left' },
 	                            _react2.default.createElement('i', { onClick: function onClick(e) {
 	                                    return that.updateSelected(e);
-	                                }, className: 'fa fa-times fa-2x' })
+	                                }, className: 'fa fa-times fa-1x' })
 	                        )
 	                    );
 	                }
@@ -28659,11 +28682,7 @@
 	            return _react2.default.createElement(
 	                'div',
 	                { className: 'container' },
-	                _react2.default.createElement(
-	                    'ul',
-	                    null,
-	                    content
-	                )
+	                content
 	            );
 	        }
 	    }]);
@@ -38238,7 +38257,7 @@
 
 
 	// module
-	exports.push([module.id, ".filters {\n  list-style-type: none !important; }\n\n.handle {\n  margin-left: -2em;\n  float: left; }\n\n.input {\n  margin-left: 2em; }\n\n.form {\n  margin: auto;\n  display: block;\n  text-align: center; }\n\nul {\n  padding: 0; }\n\n.filterContainer {\n  text-align: center; }\n\nbutton {\n  margin: auto;\n  display: block; }\n\n.slider {\n  margin: 0 auto;\n  padding: 40px;\n  width: 80%;\n  color: #333;\n  background: #419be0; }\n\n.coverflow__cover__25-7e {\n  box-shadow: none !important; }\n\n.artistContainer {\n  margin-top: -4em; }\n\n.coverflow__container__1P-xE {\n  background: black !important; }\n\nsvg text {\n  font-family: FontAwesome; }\n\n.badge {\n  top: 5em;\n  position: relative;\n  left: 11em; }\n\n.selectedArtists {\n  background-size: contain;\n  width: 5em;\n  height: 6em;\n  background-repeat: no-repeat;\n  opacity: 0.9; }\n\n.buttonRemove {\n  background: none;\n  border: none; }\n\n.InputRange-slider {\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: #01a982;\n  border: 1px solid #01a982;\n  border-radius: 100%;\n  cursor: pointer;\n  display: block;\n  height: 1rem;\n  margin-left: -0.5rem;\n  margin-top: -0.65rem;\n  outline: none;\n  position: absolute;\n  top: 50%;\n  transition: -webkit-transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  width: 1rem; }\n\n.InputRange-slider:active {\n  -webkit-transform: scale(1.3);\n  transform: scale(1.3); }\n\n.InputRange-slider:focus {\n  box-shadow: 0 0 0 5px rgba(63, 81, 181, 0.2); }\n\n.InputRange.is-disabled .InputRange-slider {\n  background: #cccccc;\n  border: 1px solid #cccccc;\n  box-shadow: none;\n  -webkit-transform: none;\n  transform: none; }\n\n.InputRange-sliderContainer {\n  transition: left 0.3s ease-out; }\n\n.InputRange-label {\n  color: #aaaaaa;\n  font-family: \"Helvetica Neue\", san-serif;\n  font-size: 0.8rem;\n  white-space: nowrap; }\n\n.InputRange-label--min,\n.InputRange-label--max {\n  bottom: -1.4rem;\n  position: absolute; }\n\n.InputRange-label--min {\n  left: 0; }\n\n.InputRange-label--max {\n  right: 0; }\n\n.InputRange-label--value {\n  position: absolute;\n  top: -1.8rem; }\n\n.InputRange-labelContainer {\n  left: -50%;\n  position: relative; }\n\n.InputRange-label--max .InputRange-labelContainer {\n  left: 50%; }\n\n.InputRange-track {\n  background: #eeeeee;\n  border-radius: 0.3rem;\n  cursor: pointer;\n  display: block;\n  height: 0.3rem;\n  position: relative;\n  transition: left 0.3s ease-out, width 0.3s ease-out; }\n\n.InputRange.is-disabled .InputRange-track {\n  background: #eeeeee; }\n\n.InputRange-track--container {\n  left: 0;\n  margin-top: -0.15rem;\n  position: absolute;\n  right: 0;\n  top: 50%; }\n\n.InputRange-track--active {\n  background: #01a982; }\n\n.InputRange {\n  height: 1rem;\n  position: relative;\n  width: 100%; }\n", ""]);
+	exports.push([module.id, ".filters {\n  list-style-type: none !important; }\n\n.handle {\n  margin-left: -2em;\n  float: left; }\n\n.input {\n  margin-left: 2em; }\n\n.form {\n  margin: auto;\n  display: block;\n  text-align: center; }\n\nul {\n  padding: 0; }\n\n.filterContainer {\n  text-align: center; }\n\nbutton {\n  margin: auto;\n  display: block; }\n\n.slider {\n  margin: 0 auto;\n  padding: 40px;\n  width: 80%;\n  color: #333;\n  background: #419be0; }\n\n.coverflow__cover__25-7e {\n  box-shadow: none !important; }\n\n.artistContainer {\n  margin-top: -4em; }\n\n.coverflow__container__1P-xE {\n  background: black !important; }\n\nsvg text {\n  font-family: FontAwesome; }\n\n.badge {\n  top: 5em;\n  position: relative;\n  left: 11em; }\n\n.selectedArtists {\n  background-size: contain;\n  width: 5em;\n  height: 6em;\n  background-repeat: no-repeat;\n  opacity: 0.9; }\n\n.buttonRemove {\n  background: none;\n  border: none;\n  color: red; }\n\n.left {\n  float: left;\n  line-height: 1em; }\n\n.InputRange-slider {\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: #01a982;\n  border: 1px solid #01a982;\n  border-radius: 100%;\n  cursor: pointer;\n  display: block;\n  height: 1rem;\n  margin-left: -0.5rem;\n  margin-top: -0.65rem;\n  outline: none;\n  position: absolute;\n  top: 50%;\n  transition: -webkit-transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  width: 1rem; }\n\n.InputRange-slider:active {\n  -webkit-transform: scale(1.3);\n  transform: scale(1.3); }\n\n.InputRange-slider:focus {\n  box-shadow: 0 0 0 5px rgba(63, 81, 181, 0.2); }\n\n.InputRange.is-disabled .InputRange-slider {\n  background: #cccccc;\n  border: 1px solid #cccccc;\n  box-shadow: none;\n  -webkit-transform: none;\n  transform: none; }\n\n.InputRange-sliderContainer {\n  transition: left 0.3s ease-out; }\n\n.InputRange-label {\n  color: #aaaaaa;\n  font-family: \"Helvetica Neue\", san-serif;\n  font-size: 0.8rem;\n  white-space: nowrap; }\n\n.InputRange-label--min,\n.InputRange-label--max {\n  bottom: -1.4rem;\n  position: absolute; }\n\n.InputRange-label--min {\n  left: 0; }\n\n.InputRange-label--max {\n  right: 0; }\n\n.InputRange-label--value {\n  position: absolute;\n  top: -1.8rem; }\n\n.InputRange-labelContainer {\n  left: -50%;\n  position: relative; }\n\n.InputRange-label--max .InputRange-labelContainer {\n  left: 50%; }\n\n.InputRange-track {\n  background: #eeeeee;\n  border-radius: 0.3rem;\n  cursor: pointer;\n  display: block;\n  height: 0.3rem;\n  position: relative;\n  transition: left 0.3s ease-out, width 0.3s ease-out; }\n\n.InputRange.is-disabled .InputRange-track {\n  background: #eeeeee; }\n\n.InputRange-track--container {\n  left: 0;\n  margin-top: -0.15rem;\n  position: absolute;\n  right: 0;\n  top: 50%; }\n\n.InputRange-track--active {\n  background: #01a982; }\n\n.InputRange {\n  height: 1rem;\n  position: relative;\n  width: 100%; }\n\n.skewedBanner {\n  float: left;\n  color: #84bd00;\n  background-color: black;\n  transform: skew(-10deg);\n  -webkit-transform: skew(-10deg);\n  -moz-transform: skew(-10deg);\n  text-align: center;\n  line-height: 2.5em;\n  width: 33.3333%;\n  height: 3rem;\n  border: 2px solid #84bd00; }\n  .skewedBanner.inverted {\n    color: black;\n    background-color: #84bd00; }\n", ""]);
 
 	// exports
 
