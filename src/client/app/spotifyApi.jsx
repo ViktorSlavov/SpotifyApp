@@ -70,7 +70,7 @@ let SpotifyApi = {
         let count = 50;
         
     },
-    getArtistAlbums : function(token, artist){
+    getArtistAlbums : function(token, artist, artistName){
         console.log(artist);
         return new Promise(function(resolve,reject){
             let req = new XMLHttpRequest();
@@ -78,7 +78,11 @@ let SpotifyApi = {
             let id = 'https://api.spotify.com/v1/artists/'+artist+'/albums';
             req.onreadystatechange = function(data) {
                 if (this.readyState == 4 && this.status == 200) {
-                    resolve(JSON.parse(data.currentTarget.response).items);
+                    let results = JSON.parse(data.currentTarget.response).items.map(function(elem){
+                        elem.artistName = artistName;
+                        return elem
+                    })
+                    resolve(results);
                 } else if (this.readyState == 4 && this.status != 200){
                     reject('Error');
                 }
@@ -88,14 +92,19 @@ let SpotifyApi = {
             req.send();
         })
     },
-    getAlbumTracks : function(token, album){
+    getAlbumTracks : function(token, album, artistName){
         return new Promise(function(resolve,reject){
             let req = new XMLHttpRequest();
             let auth = `Bearer ${token}`;
             let id = 'https://api.spotify.com/v1/albums/'+album;
             req.onreadystatechange = function(data) {
                 if (this.readyState == 4 && this.status == 200) {
-                    resolve(JSON.parse(data.currentTarget.response).tracks.items);
+                    let results = JSON.parse(data.currentTarget.response).tracks.items.map(function(elem){
+                        elem.artistName = artistName;
+                        return elem
+                    })
+                    resolve(results);
+                    console.log("tracks: ",results)
                 } else if (this.readyState == 4 && this.status != 200){
                     reject('Error');
                 }
@@ -105,14 +114,24 @@ let SpotifyApi = {
             req.send();
         })
     },
-    getTrackFeatures : function(token, tracks){
+    getTrackFeatures : function(token, tracks, artists, songNames){
         return new Promise(function(resolve,reject){
             let req = new XMLHttpRequest();
             let auth = `Bearer ${token}`;
             let id = 'https://api.spotify.com/v1/audio-features/?ids='+tracks;
             req.onreadystatechange = function(data) {
                 if (this.readyState == 4 && this.status == 200) {
-                    resolve(JSON.parse(data.currentTarget.response).audio_features);
+                    let results = JSON.parse(data.currentTarget.response).audio_features.map(function(elem, index){
+                        elem.artistName = artists[index]
+                        elem.songName = songNames[index]
+                        return elem
+                    })
+                    resolve(results);
+                    // resolve(JSON.parse(data.currentTarget.response).audio_features.map(function(elem, index){
+                    //     elem.artist = artists.artist[index]
+                    //     elem.name = artists.names[names]
+                    //     return elem
+                    // }));
                 } else if (this.readyState == 4 && this.status != 200){
                     reject('Error');
                 }

@@ -59,15 +59,16 @@ class AudioFilterContainer extends React.Component {
         let albums = [];
         for (let i=0; i<missingArtists.length; i++){
             if(missingArtists[i].skipCheck != true && missingArtists[i].selected == true){
-                let req = SpotifyApi.getArtistAlbums(this.state.token, missingArtists[i].id);
+                let req = SpotifyApi.getArtistAlbums(this.state.token, missingArtists[i].id, missingArtists[i].name);
                 albums.push(req);
+                missingArtists[i].songCheck = true;
             }
         }
         Promise.all(albums).then(function(results){
             let tracks = [];
             results = flatten(results)
             for(let i=0; i<results.length; i++){
-                let req = SpotifyApi.getAlbumTracks(that.state.token, results[i].id);
+                let req = SpotifyApi.getAlbumTracks(that.state.token, results[i].id,results[i].artistName);
                 tracks.push(req);
             }
             Promise.all(tracks).then(function(results){
@@ -75,10 +76,13 @@ class AudioFilterContainer extends React.Component {
                 console.log("Tracks results : ", results)
                 let trackFeatures = [];
                 let stringOfIds = "";
+                let names, artists = [];
                 for(let i=0; i<results.length; i+=99){
                     stringOfIds = results.slice(i,i+99).map(function(elem){ return elem.id}).join(',');
-                    console.log("String of IDs : ", stringOfIds);
-                    let req = SpotifyApi.getTrackFeatures(that.state.token, stringOfIds);
+                    names = results.slice(i,i+99).map(function(elem){ return elem.name});
+                    artists = results.slice(i,i+99).map(function(elem){ return elem.artistName});
+                    //console.log("String of IDs : ", stringOfIds);
+                    let req = SpotifyApi.getTrackFeatures(that.state.token, stringOfIds, artists, names);
                     trackFeatures.push(req)
                 }
                 Promise.all(trackFeatures).then(function(results){

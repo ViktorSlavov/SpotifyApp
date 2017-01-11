@@ -27616,7 +27616,7 @@
 	    filterTracks: function filterTracks(tracks) {
 	        var count = 50;
 	    },
-	    getArtistAlbums: function getArtistAlbums(token, artist) {
+	    getArtistAlbums: function getArtistAlbums(token, artist, artistName) {
 	        console.log(artist);
 	        return new Promise(function (resolve, reject) {
 	            var req = new XMLHttpRequest();
@@ -27624,7 +27624,11 @@
 	            var id = 'https://api.spotify.com/v1/artists/' + artist + '/albums';
 	            req.onreadystatechange = function (data) {
 	                if (this.readyState == 4 && this.status == 200) {
-	                    resolve(JSON.parse(data.currentTarget.response).items);
+	                    var results = JSON.parse(data.currentTarget.response).items.map(function (elem) {
+	                        elem.artistName = artistName;
+	                        return elem;
+	                    });
+	                    resolve(results);
 	                } else if (this.readyState == 4 && this.status != 200) {
 	                    reject('Error');
 	                }
@@ -27634,14 +27638,19 @@
 	            req.send();
 	        });
 	    },
-	    getAlbumTracks: function getAlbumTracks(token, album) {
+	    getAlbumTracks: function getAlbumTracks(token, album, artistName) {
 	        return new Promise(function (resolve, reject) {
 	            var req = new XMLHttpRequest();
 	            var auth = 'Bearer ' + token;
 	            var id = 'https://api.spotify.com/v1/albums/' + album;
 	            req.onreadystatechange = function (data) {
 	                if (this.readyState == 4 && this.status == 200) {
-	                    resolve(JSON.parse(data.currentTarget.response).tracks.items);
+	                    var results = JSON.parse(data.currentTarget.response).tracks.items.map(function (elem) {
+	                        elem.artistName = artistName;
+	                        return elem;
+	                    });
+	                    resolve(results);
+	                    console.log("tracks: ", results);
 	                } else if (this.readyState == 4 && this.status != 200) {
 	                    reject('Error');
 	                }
@@ -27651,14 +27660,24 @@
 	            req.send();
 	        });
 	    },
-	    getTrackFeatures: function getTrackFeatures(token, tracks) {
+	    getTrackFeatures: function getTrackFeatures(token, tracks, artists, songNames) {
 	        return new Promise(function (resolve, reject) {
 	            var req = new XMLHttpRequest();
 	            var auth = 'Bearer ' + token;
 	            var id = 'https://api.spotify.com/v1/audio-features/?ids=' + tracks;
 	            req.onreadystatechange = function (data) {
 	                if (this.readyState == 4 && this.status == 200) {
-	                    resolve(JSON.parse(data.currentTarget.response).audio_features);
+	                    var results = JSON.parse(data.currentTarget.response).audio_features.map(function (elem, index) {
+	                        elem.artistName = artists[index];
+	                        elem.songName = songNames[index];
+	                        return elem;
+	                    });
+	                    resolve(results);
+	                    // resolve(JSON.parse(data.currentTarget.response).audio_features.map(function(elem, index){
+	                    //     elem.artist = artists.artist[index]
+	                    //     elem.name = artists.names[names]
+	                    //     return elem
+	                    // }));
 	                } else if (this.readyState == 4 && this.status != 200) {
 	                    reject('Error');
 	                }
@@ -28844,15 +28863,16 @@
 	            var albums = [];
 	            for (var i = 0; i < missingArtists.length; i++) {
 	                if (missingArtists[i].skipCheck != true && missingArtists[i].selected == true) {
-	                    var req = _spotifyApi2.default.getArtistAlbums(this.state.token, missingArtists[i].id);
+	                    var req = _spotifyApi2.default.getArtistAlbums(this.state.token, missingArtists[i].id, missingArtists[i].name);
 	                    albums.push(req);
+	                    missingArtists[i].songCheck = true;
 	                }
 	            }
 	            Promise.all(albums).then(function (results) {
 	                var tracks = [];
 	                results = flatten(results);
 	                for (var _i = 0; _i < results.length; _i++) {
-	                    var _req = _spotifyApi2.default.getAlbumTracks(that.state.token, results[_i].id);
+	                    var _req = _spotifyApi2.default.getAlbumTracks(that.state.token, results[_i].id, results[_i].artistName);
 	                    tracks.push(_req);
 	                }
 	                Promise.all(tracks).then(function (results) {
@@ -28860,12 +28880,20 @@
 	                    console.log("Tracks results : ", results);
 	                    var trackFeatures = [];
 	                    var stringOfIds = "";
+	                    var names = void 0,
+	                        artists = [];
 	                    for (var _i2 = 0; _i2 < results.length; _i2 += 99) {
 	                        stringOfIds = results.slice(_i2, _i2 + 99).map(function (elem) {
 	                            return elem.id;
 	                        }).join(',');
-	                        console.log("String of IDs : ", stringOfIds);
-	                        var _req2 = _spotifyApi2.default.getTrackFeatures(that.state.token, stringOfIds);
+	                        names = results.slice(_i2, _i2 + 99).map(function (elem) {
+	                            return elem.name;
+	                        });
+	                        artists = results.slice(_i2, _i2 + 99).map(function (elem) {
+	                            return elem.artistName;
+	                        });
+	                        //console.log("String of IDs : ", stringOfIds);
+	                        var _req2 = _spotifyApi2.default.getTrackFeatures(that.state.token, stringOfIds, artists, names);
 	                        trackFeatures.push(_req2);
 	                    }
 	                    Promise.all(trackFeatures).then(function (results) {
