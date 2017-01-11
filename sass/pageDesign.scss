@@ -1,0 +1,19 @@
+$spotify-green: #84bd00;
+
+.skewedBanner {
+    float:left;
+    color: $spotify-green;
+    background-color:black;
+    transform: skew(-10deg);
+    -webkit-transform: skew(-10deg);
+    -moz-transform: skew(-10deg);
+    text-align: center;
+    line-height: 2.5em;
+    width:33.3333%;
+    height:3rem;
+    border: 2px solid $spotify-green;
+    &.inverted {
+        color: black;
+        background-color:$spotify-green;
+    }
+}
