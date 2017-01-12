@@ -19,12 +19,39 @@ let SpotifyApi = {
                 req.send();
          })
     },
-    createPlaylist : function(userId, token, playlistName, songs){
-        return new Promise(function(resolve,reject){
+    createPlaylist : function(userId, token, playlistName, songs, name){
+        let that = this;
             let params = JSON.stringify({
                 
-                    name : "Spotify Api Playlist Test"
+                    name : name
                 
+            })
+            let req = new XMLHttpRequest();
+            let auth = `Bearer ${token}`;
+            req.onreadystatechange = function(data) {
+                    if (this.readyState == 4 && this.status == 201) {
+                        // that.setState({
+                        //     top:JSON.parse(data.currentTarget.response)
+                        // })
+                        console.log("Playlist created!");
+                        that.addSongs(userId, token, JSON.parse(data.currentTarget.response).id,songs)
+                    }
+                    else if(this.readyState == 4 && this.status != 201){
+                         console.log('Error creating playlist');
+                    }
+            };
+            req.open("POST", 'https://api.spotify.com/v1/users/' + userId + '/playlists',true);
+            req.setRequestHeader('Authorization',auth,false)
+            req.send(params);
+    },
+    addSongs : function(userId, token, playlistId, songs, name){
+        let that = this;
+        let songURIs = songs.map(function(elem){
+            elem = elem.uri;
+            return elem
+        })
+            let params = JSON.stringify({
+                    uris : songURIs
             })
             let req = new XMLHttpRequest();
             let auth = `Bearer ${token}`;
@@ -33,20 +60,19 @@ let SpotifyApi = {
                         // that.setState({
                         //     top:JSON.parse(data.currentTarget.response)
                         // })
-                        resolve(JSON.parse(data.currentTarget.response).items);
+                        JSON.parse(data.currentTarget.response).id;
                     }
                     else if(this.readyState == 4 && this.status != 200){
-                         reject('Error');
+                         console.log(req.response);
                     }
             };
-            req.open("POST", 'https://api.spotify.com/v1/users/' + userId + '/playlists',true);
+            req.open("POST", 'https://api.spotify.com/v1/users/' + userId + '/playlists/' + playlistId + "/tracks",true);
             console.log(auth)
             req.setRequestHeader('Authorization',auth,false)
             req.send(params);
-        })
-    },
-    getCurrentUserId : function(token, playlistName, songs){
-        return new Promise(function(resolve,reject){
+    }, 
+    getCurrentUserId : function(token, playlistName, songs, name){
+        let that = this;
             let req = new XMLHttpRequest();
             let auth = `Bearer ${token}`;
             req.onreadystatechange = function(data) {
@@ -54,17 +80,15 @@ let SpotifyApi = {
                         // that.setState({
                         //     top:JSON.parse(data.currentTarget.response)
                         // })
-                        that.createPlaylist(JSON.parse(data.currentTarget.response).id, token, playlistName, songs);
+                        that.createPlaylist(JSON.parse(data.currentTarget.response).id, token, playlistName, songs, name);
                     }
                     else if(this.readyState == 4 && this.status != 200){
                          reject('Error');
                     }
             };
             req.open("GET", 'https://api.spotify.com/v1/me',true);
-            console.log(auth)
             req.setRequestHeader('Authorization',auth,false)
             req.send();
-        })
     },
     filterTracks : function(tracks){
         let count = 50;
@@ -141,6 +165,16 @@ let SpotifyApi = {
             req.send();
         })
     },
+    sortSongs(allSongs, criteria, songCount){
+        let sortedSongs = allSongs;
+        for(let key in criteria){
+            sortedSongs = sortedSongs.filter(function(elem){
+                console.log("Key: ", key, "Elem key: ", elem[key],"Criteria Min: ", criteria[key].min*100, "Criteria Max: ", criteria[key].max*100 )
+                return elem[key]*100 > criteria[key].min && elem[key]*100 <= criteria[key].max 
+            })
+        }
+        return sortedSongs = sortedSongs.slice(0,songCount)
+    }
 
     
 }

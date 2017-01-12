@@ -1,16 +1,15 @@
 $filter-color: #01a982;
 
 .filters {
+
   list-style-type: none!important;
 }
-
-.handle {
-  margin-left:-2em;
-  float:left;
+ul.filters{
+    padding-top:5%;
 }
 
 .input {
-  margin-left:2em;
+  margin:auto;
 }
 
 .form {

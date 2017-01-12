@@ -25,9 +25,11 @@ class AudioFilterContainer extends React.Component {
         this.state = {
             artists: [],
             token: localStorage.getItem('token'),
-            items: ['Dance', 'Instrumental', 'Vocals', 'Energy', 'Beats per minute', 'Audiance included'],
+            items: [{name : 'Dance', feature: 'danceability'}, { name: 'Instrumental', feature : 'instrumentalness'}, { name: 'Emotion', feature : 'valence'}, { name: 'Energy', feature : 'energy'}, { name: 'Tempo', feature : 'tempo'}, { name: 'Audiance included', feature : 'liveness'}],
             criteria: {},
-            songs: []
+            songs: [],
+            playlistName: "",
+            filterState: true,
         }
     }
     
@@ -122,19 +124,29 @@ class AudioFilterContainer extends React.Component {
     }
     render() {
         let that = this;
-        return (
-            <div className="filterContainer">
-                <ul onChange={(event) => this.onSortEnd(event)} className="filters">
-                    {this.state.items.map((value, index) =>
-                        <li className="filters" key={value}>
-                            <AudioFilter value={value} criteriaUpdate={(values,name) => this.updateCriteria(values,name)}/>
-                        </li>
-                    )}
-                </ul>
-        <button onClick={() => console.log(this.state.songs)}>Console log</button>
-        <button><Link to={{ pathname: 'home', state: { artists: that.state.artists} }}>Back to selection</Link></button>
-        <button onClick={() => console.log(this.state.criteria)/*SpotifyApi.getCurrentUserId(this.state.token, "Awesome spotify api playlist")*/}>Create playlist</button>
+        let content = "";
+        if(that.state.filterState == true){
+            content = <div className="filterContainer">
+            <ul onChange={(event) => this.onSortEnd(event)} className="filters">
+                {this.state.items.map((value) =>
+                    <li className="filters" key={value.name}>
+                        <AudioFilter feature={value.feature} value={value.name} criteriaUpdate={(values,name) => this.updateCriteria(values,name)}/>
+                    </li>
+                )}
+            </ul>
+            <button onClick={() => console.log(this.state.songs)}>Console log</button>
+            <button><Link to={{ pathname: 'home', state: { artists: that.state.artists} }}>Back to selection</Link></button>
+            <button onClick={() => this.setState({filterState : false})}>Filters set!</button>
             </div>
+        } else {
+            content = <div>
+                <div className="center">Enter a name for your playlist:</div>
+                <input value={this.state.playlistName} onChange={(e) => this.setState({playlistName : e.target.value})}></input>
+                <button onClick={() => SpotifyApi.getCurrentUserId(this.state.token, "Awesome spotify api playlist", SpotifyApi.sortSongs(this.state.songs,this.state.criteria,20), that.state.playlistName)/**/}>Create playlist</button>
+            </div>
+        }
+        return (
+            content
         )
     }
 }

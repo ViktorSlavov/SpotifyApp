@@ -4,7 +4,7 @@ $spotify-green: #84bd00;
     float:left;
     color: $spotify-green;
     background-color:black;
-    transform: skew(-10deg);
+    transform: skewX(-10deg);
     -webkit-transform: skew(-10deg);
     -moz-transform: skew(-10deg);
     text-align: center;
