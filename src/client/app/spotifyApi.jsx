@@ -165,18 +165,73 @@ let SpotifyApi = {
             req.send();
         })
     },
-    sortSongs(allSongs, criteria, songCount){
+    sortSongs(allSongs, criteria, songCount, mod, feature, prevArray){
+        let that=this;
         let sortedSongs = allSongs;
-        for(let key in criteria){
-            sortedSongs = sortedSongs.filter(function(elem){
-                console.log("Key: ", key, "Elem key: ", elem[key],"Criteria Min: ", criteria[key].min*100, "Criteria Max: ", criteria[key].max*100 )
-                return elem[key]*100 > criteria[key].min && elem[key]*100 <= criteria[key].max 
-            })
+        prevArray = prevArray || [];
+        mod = mod || 0;
+        feature = feature || "";
+        let topCriteria = 0;
+        let minCriteria = 100;
+        let topKey = "";
+        let minKey = "";
+        if(feature != ""){
+            console.log("Editing feature: ", "; Min: ",criteria[feature].min,"; Max: ", criteria[feature].max)
+            criteria[feature].min -= mod;
+            criteria[feature].max += mod;
         }
-        return sortedSongs = sortedSongs.slice(0,songCount)
-    }
+        if(prevArray.length > 0){
+            sortedSongs = prevArray;
 
-    
+        }
+        for(let key in criteria){
+            if(key == feature){
+                sortedSongs = sortedSongs.filter(function(elem){
+                    return elem[key]*100 > (criteria[key].min - mod) && elem[key]*100 <= (criteria[key].max + mod)
+                })
+            } else {
+                sortedSongs = sortedSongs.filter(function(elem){
+                    return elem[key]*100 > criteria[key].min && elem[key]*100 <= criteria[key].max
+                })
+            }
+            let modStr = criteria[key].max - criteria[key].min;
+            
+            // if(key == feature){
+            //     criteria[key].max - criteria[key].min + mod;
+            // } else {
+            //     criteria[key].max - criteria[key].min
+            // }
+            if(modStr < minCriteria){
+                minCriteria = modStr;
+                minKey = key
+            }
+            if(modStr > topCriteria){
+                topCriteria = modStr;
+                topKey = key;
+            }
+        }
+        // sortedSongs.sort(function(a,b){
+        //     return a[topKey] - b[topKey]
+        // })
+        var usedSongs = [];
+        console.log(sortedSongs);
+        sortedSongs.map(function(elem){
+            if(usedSongs.indexOf(elem.songName.toLowerCase()) < -1){
+                usedSongs.push(elem.songName.toLowerCase())
+                return elem
+            } else {
+                return 0
+            }
+        }).filter(function(elem){
+            return typeof elem != "number"
+        })
+        console.log(sortedSongs.length, sortedSongs, feature, mod);
+        if(sortedSongs.length < songCount){
+            return SpotifyApi.sortSongs(allSongs, criteria, songCount,20, minKey)
+        } else {
+             return sortedSongs = sortedSongs.slice(0,songCount)
+        }  
+    }  
 }
 
 

@@ -27731,20 +27731,76 @@
 	            req.send();
 	        });
 	    },
-	    sortSongs: function sortSongs(allSongs, criteria, songCount) {
+	    sortSongs: function sortSongs(allSongs, criteria, songCount, mod, feature, prevArray) {
+	        var that = this;
 	        var sortedSongs = allSongs;
+	        prevArray = prevArray || [];
+	        mod = mod || 0;
+	        feature = feature || "";
+	        var topCriteria = 0;
+	        var minCriteria = 100;
+	        var topKey = "";
+	        var minKey = "";
+	        if (feature != "") {
+	            console.log("Editing feature: ", "; Min: ", criteria[feature].min, "; Max: ", criteria[feature].max);
+	            criteria[feature].min -= mod;
+	            criteria[feature].max += mod;
+	        }
+	        if (prevArray.length > 0) {
+	            sortedSongs = prevArray;
+	        }
 
 	        var _loop = function _loop(key) {
-	            sortedSongs = sortedSongs.filter(function (elem) {
-	                console.log("Key: ", key, "Elem key: ", elem[key], "Criteria Min: ", criteria[key].min * 100, "Criteria Max: ", criteria[key].max * 100);
-	                return elem[key] * 100 > criteria[key].min && elem[key] * 100 <= criteria[key].max;
-	            });
+	            if (key == feature) {
+	                sortedSongs = sortedSongs.filter(function (elem) {
+	                    return elem[key] * 100 > criteria[key].min - mod && elem[key] * 100 <= criteria[key].max + mod;
+	                });
+	            } else {
+	                sortedSongs = sortedSongs.filter(function (elem) {
+	                    return elem[key] * 100 > criteria[key].min && elem[key] * 100 <= criteria[key].max;
+	                });
+	            }
+	            var modStr = criteria[key].max - criteria[key].min;
+
+	            // if(key == feature){
+	            //     criteria[key].max - criteria[key].min + mod;
+	            // } else {
+	            //     criteria[key].max - criteria[key].min
+	            // }
+	            if (modStr < minCriteria) {
+	                minCriteria = modStr;
+	                minKey = key;
+	            }
+	            if (modStr > topCriteria) {
+	                topCriteria = modStr;
+	                topKey = key;
+	            }
 	        };
 
 	        for (var key in criteria) {
 	            _loop(key);
 	        }
-	        return sortedSongs = sortedSongs.slice(0, songCount);
+	        // sortedSongs.sort(function(a,b){
+	        //     return a[topKey] - b[topKey]
+	        // })
+	        var usedSongs = [];
+	        console.log(sortedSongs);
+	        sortedSongs.map(function (elem) {
+	            if (usedSongs.indexOf(elem.songName.toLowerCase()) < -1) {
+	                usedSongs.push(elem.songName.toLowerCase());
+	                return elem;
+	            } else {
+	                return 0;
+	            }
+	        }).filter(function (elem) {
+	            return typeof elem != "number";
+	        });
+	        console.log(sortedSongs.length, sortedSongs, feature, mod);
+	        if (sortedSongs.length < songCount) {
+	            return SpotifyApi.sortSongs(allSongs, criteria, songCount, 20, minKey);
+	        } else {
+	            return sortedSongs = sortedSongs.slice(0, songCount);
+	        }
 	    }
 	};
 
@@ -28877,6 +28933,7 @@
 	            criteria: {},
 	            songs: [],
 	            playlistName: "",
+	            sortedSongs: [],
 	            filterState: true
 	        };
 	        return _this;
@@ -28913,7 +28970,7 @@
 	            var missingArtists = this.state.artists;
 	            console.log(missingArtists);
 	            missingArtists.map(function (elem) {
-	                if (elem.songCheck == true) {
+	                if (elem.songsCheck == true) {
 	                    elem.skipCheck == true;
 	                }
 	                return elem;
@@ -29055,6 +29112,13 @@
 	                    _react2.default.createElement('input', { value: this.state.playlistName, onChange: function onChange(e) {
 	                            return _this2.setState({ playlistName: e.target.value });
 	                        } }),
+	                    _react2.default.createElement(
+	                        'button',
+	                        { onClick: function onClick() {
+	                                return _this2.setState({ filterState: true });
+	                            } },
+	                        'Return to filters'
+	                    ),
 	                    _react2.default.createElement(
 	                        'button',
 	                        { onClick: function onClick() {
