@@ -11,9 +11,22 @@ $spotify-green: #84bd00;
     line-height: 2.5em;
     width:33.3333%;
     height:3rem;
-    border: 2px solid $spotify-green;
+   // border: 2px solid $spotify-green;
     &.inverted {
         color: black;
         background-color:$spotify-green;
     }
+}
+
+.bannerContainer {
+    //   transform: skew(10deg);
+    // -webkit-transform: skew(10deg);
+    // -moz-transform: skew(10deg);
+    width:100%;
+    background:black;
+    height:3rem;
+}
+
+.fa-chevron-right {
+    float: right!important;
 }

@@ -25,7 +25,7 @@ class SliderArtists extends React.Component{
       return (
         <Coverflow
           width={1000}
-          height={600}
+          height={300}
           displayQuantityOfSide={2}
           navigation={false}
           enableHeading={true}

@@ -41,7 +41,10 @@ button {
 }
 
 .coverflow__cover__25-7e {
-  box-shadow: none !important;
+  box-shadow: none!important;
+  // width:5em;
+  // height: 5em;
+
 }
 
 .artistContainer{
@@ -80,6 +83,10 @@ svg text {
 .left {
     float: left;
     line-height: 1em;
+}
+
+.coverflow__container__1P-xE {
+  //width:100%!important;
 }
 
 .InputRange-slider {
