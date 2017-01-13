@@ -21,8 +21,8 @@ class AudioFilter extends React.Component {
     this.setState({
       values: values,
     });
-    console.log(this.props.values)
-    this.props.criteriaUpdate(this.state.values, this.props.value)
+    console.log(this.state.values)
+    this.props.criteriaUpdate(this.state.values, this.props.feature)
   }
 
   render() {

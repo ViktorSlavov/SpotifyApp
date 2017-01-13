@@ -27437,13 +27437,13 @@
 	                if (elem.name == value.name) {
 	                    elem.selected = !elem.selected;
 	                    elem.check = elem.check == '\uF00C' ? '' : '\uF00C';
+	                    // elem.removed = value.removed;
 	                }
 	                return elem;
 	            });
 	            this.setState({
 	                topSliderArtists: phSelected
 	            });
-	            console.log(this.state.topSliderArtists);
 	        }
 	    }, {
 	        key: 'componentWillMount',
@@ -27482,6 +27482,7 @@
 	                            elem.selected = false;
 	                            elem.check = '';
 	                            elem.songsCheck = false;
+	                            elem.removed = false;
 	                            return elem;
 	                        });
 	                        that.setState({
@@ -27491,8 +27492,6 @@
 	                    });
 	                })();
 	            }
-
-	            console.log(this.state.topSliderArtists);
 	        }
 	    }, {
 	        key: 'render',
@@ -27508,7 +27507,7 @@
 	                    _react2.default.createElement(
 	                        'div',
 	                        null,
-	                        _react2.default.createElement(_sliderArtists2.default, { artists: this.state.topSliderArtists, populate: function populate(elem) {
+	                        _react2.default.createElement(_sliderArtists2.default, { artists: this.state.topSliderArtists, active: 4, populate: function populate(elem) {
 	                                return that.populateSelectedArtists(elem);
 	                            } }),
 	                        _react2.default.createElement(_selectedArtists2.default, { populate: function populate(elem) {
@@ -27579,55 +27578,79 @@
 	            req.send();
 	        });
 	    },
-	    createPlaylist: function createPlaylist(userId, token, playlistName, songs) {
-	        return new Promise(function (resolve, reject) {
-	            var params = JSON.stringify({
+	    createPlaylist: function createPlaylist(userId, token, playlistName, songs, name) {
+	        var that = this;
+	        var params = JSON.stringify({
 
-	                name: "Spotify Api Playlist Test"
+	            name: name
 
-	            });
-	            var req = new XMLHttpRequest();
-	            var auth = 'Bearer ' + token;
-	            req.onreadystatechange = function (data) {
-	                if (this.readyState == 4 && this.status == 200) {
-	                    // that.setState({
-	                    //     top:JSON.parse(data.currentTarget.response)
-	                    // })
-	                    resolve(JSON.parse(data.currentTarget.response).items);
-	                } else if (this.readyState == 4 && this.status != 200) {
-	                    reject('Error');
-	                }
-	            };
-	            req.open("POST", 'https://api.spotify.com/v1/users/' + userId + '/playlists', true);
-	            console.log(auth);
-	            req.setRequestHeader('Authorization', auth, false);
-	            req.send(params);
 	        });
+	        var req = new XMLHttpRequest();
+	        var auth = 'Bearer ' + token;
+	        req.onreadystatechange = function (data) {
+	            if (this.readyState == 4 && this.status == 201) {
+	                // that.setState({
+	                //     top:JSON.parse(data.currentTarget.response)
+	                // })
+	                console.log("Playlist created!");
+	                that.addSongs(userId, token, JSON.parse(data.currentTarget.response).id, songs);
+	            } else if (this.readyState == 4 && this.status != 201) {
+	                console.log('Error creating playlist');
+	            }
+	        };
+	        req.open("POST", 'https://api.spotify.com/v1/users/' + userId + '/playlists', true);
+	        req.setRequestHeader('Authorization', auth, false);
+	        req.send(params);
 	    },
-	    getCurrentUserId: function getCurrentUserId(token, playlistName, songs) {
-	        return new Promise(function (resolve, reject) {
-	            var req = new XMLHttpRequest();
-	            var auth = 'Bearer ' + token;
-	            req.onreadystatechange = function (data) {
-	                if (this.readyState == 4 && this.status == 200) {
-	                    // that.setState({
-	                    //     top:JSON.parse(data.currentTarget.response)
-	                    // })
-	                    that.createPlaylist(JSON.parse(data.currentTarget.response).id, token, playlistName, songs);
-	                } else if (this.readyState == 4 && this.status != 200) {
-	                    reject('Error');
-	                }
-	            };
-	            req.open("GET", 'https://api.spotify.com/v1/me', true);
-	            console.log(auth);
-	            req.setRequestHeader('Authorization', auth, false);
-	            req.send();
+	    addSongs: function addSongs(userId, token, playlistId, songs, name) {
+	        var that = this;
+	        var songURIs = songs.map(function (elem) {
+	            elem = elem.uri;
+	            return elem;
 	        });
+	        console.log(songs, songURIs);
+	        var params = JSON.stringify({
+	            uris: songURIs
+	        });
+	        var req = new XMLHttpRequest();
+	        var auth = 'Bearer ' + token;
+	        req.onreadystatechange = function (data) {
+	            if (this.readyState == 4 && this.status == 200) {
+	                // that.setState({
+	                //     top:JSON.parse(data.currentTarget.response)
+	                // })
+	                JSON.parse(data.currentTarget.response).id;
+	            } else if (this.readyState == 4 && this.status != 200) {
+	                console.log(req.response);
+	            }
+	        };
+	        req.open("POST", 'https://api.spotify.com/v1/users/' + userId + '/playlists/' + playlistId + "/tracks", true);
+	        console.log(auth);
+	        req.setRequestHeader('Authorization', auth, false);
+	        req.send(params);
+	    },
+	    getCurrentUserId: function getCurrentUserId(token, playlistName, songs, name) {
+	        var that = this;
+	        var req = new XMLHttpRequest();
+	        var auth = 'Bearer ' + token;
+	        req.onreadystatechange = function (data) {
+	            if (this.readyState == 4 && this.status == 200) {
+	                // that.setState({
+	                //     top:JSON.parse(data.currentTarget.response)
+	                // })
+	                that.createPlaylist(JSON.parse(data.currentTarget.response).id, token, playlistName, songs, name);
+	            } else if (this.readyState == 4 && this.status != 200) {
+	                reject('Error');
+	            }
+	        };
+	        req.open("GET", 'https://api.spotify.com/v1/me', true);
+	        req.setRequestHeader('Authorization', auth, false);
+	        req.send();
 	    },
 	    filterTracks: function filterTracks(tracks) {
 	        var count = 50;
 	    },
-	    getArtistAlbums: function getArtistAlbums(token, artist) {
+	    getArtistAlbums: function getArtistAlbums(token, artist, artistName) {
 	        console.log(artist);
 	        return new Promise(function (resolve, reject) {
 	            var req = new XMLHttpRequest();
@@ -27635,7 +27658,11 @@
 	            var id = 'https://api.spotify.com/v1/artists/' + artist + '/albums';
 	            req.onreadystatechange = function (data) {
 	                if (this.readyState == 4 && this.status == 200) {
-	                    resolve(JSON.parse(data.currentTarget.response).items);
+	                    var results = JSON.parse(data.currentTarget.response).items.map(function (elem) {
+	                        elem.artistName = artistName;
+	                        return elem;
+	                    });
+	                    resolve(results);
 	                } else if (this.readyState == 4 && this.status != 200) {
 	                    reject('Error');
 	                }
@@ -27645,14 +27672,19 @@
 	            req.send();
 	        });
 	    },
-	    getAlbumTracks: function getAlbumTracks(token, album) {
+	    getAlbumTracks: function getAlbumTracks(token, album, artistName) {
 	        return new Promise(function (resolve, reject) {
 	            var req = new XMLHttpRequest();
 	            var auth = 'Bearer ' + token;
 	            var id = 'https://api.spotify.com/v1/albums/' + album;
 	            req.onreadystatechange = function (data) {
 	                if (this.readyState == 4 && this.status == 200) {
-	                    resolve(JSON.parse(data.currentTarget.response).tracks.items);
+	                    var results = JSON.parse(data.currentTarget.response).tracks.items.map(function (elem) {
+	                        elem.artistName = artistName;
+	                        return elem;
+	                    });
+	                    resolve(results);
+	                    console.log("tracks: ", results);
 	                } else if (this.readyState == 4 && this.status != 200) {
 	                    reject('Error');
 	                }
@@ -27662,14 +27694,24 @@
 	            req.send();
 	        });
 	    },
-	    getTrackFeatures: function getTrackFeatures(token, tracks) {
+	    getTrackFeatures: function getTrackFeatures(token, tracks, artists, songNames) {
 	        return new Promise(function (resolve, reject) {
 	            var req = new XMLHttpRequest();
 	            var auth = 'Bearer ' + token;
 	            var id = 'https://api.spotify.com/v1/audio-features/?ids=' + tracks;
 	            req.onreadystatechange = function (data) {
 	                if (this.readyState == 4 && this.status == 200) {
-	                    resolve(JSON.parse(data.currentTarget.response).audio_features);
+	                    var results = JSON.parse(data.currentTarget.response).audio_features.map(function (elem, index) {
+	                        elem.artistName = artists[index];
+	                        elem.songName = songNames[index];
+	                        return elem;
+	                    });
+	                    resolve(results);
+	                    // resolve(JSON.parse(data.currentTarget.response).audio_features.map(function(elem, index){
+	                    //     elem.artist = artists.artist[index]
+	                    //     elem.name = artists.names[names]
+	                    //     return elem
+	                    // }));
 	                } else if (this.readyState == 4 && this.status != 200) {
 	                    reject('Error');
 	                }
@@ -27678,8 +27720,22 @@
 	            req.setRequestHeader('Authorization', auth, true);
 	            req.send();
 	        });
-	    }
+	    },
+	    sortSongs: function sortSongs(allSongs, criteria, songCount) {
+	        var sortedSongs = allSongs;
 
+	        var _loop = function _loop(key) {
+	            sortedSongs = sortedSongs.filter(function (elem) {
+	                console.log("Key: ", key, "Elem key: ", elem[key], "Criteria Min: ", criteria[key].min * 100, "Criteria Max: ", criteria[key].max * 100);
+	                return elem[key] * 100 > criteria[key].min && elem[key] * 100 <= criteria[key].max;
+	            });
+	        };
+
+	        for (var key in criteria) {
+	            _loop(key);
+	        }
+	        return sortedSongs = sortedSongs.slice(0, songCount);
+	    }
 	};
 
 	exports.default = SpotifyApi;
@@ -27758,7 +27814,7 @@
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
-	    value: true
+	  value: true
 	});
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -27784,51 +27840,71 @@
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 	var SliderArtists = function (_React$Component) {
-	    _inherits(SliderArtists, _React$Component);
+	  _inherits(SliderArtists, _React$Component);
 
-	    function SliderArtists(props) {
-	        _classCallCheck(this, SliderArtists);
+	  function SliderArtists(props) {
+	    _classCallCheck(this, SliderArtists);
 
-	        var _this = _possibleConstructorReturn(this, (SliderArtists.__proto__ || Object.getPrototypeOf(SliderArtists)).call(this, props));
+	    var _this = _possibleConstructorReturn(this, (SliderArtists.__proto__ || Object.getPrototypeOf(SliderArtists)).call(this, props));
 
-	        _this.state = {
-	            artists: '',
-	            selected: []
-	        };
-	        // this.populateSelectedArtists = this.populateSelectedArtists.bind(this);
-	        return _this;
+	    _this.state = {
+	      artists: '',
+	      selected: [],
+	      active: 2
+
+	    };
+	    // this.populateSelectedArtists = this.populateSelectedArtists.bind(this);
+	    return _this;
+	  }
+
+	  _createClass(SliderArtists, [{
+	    key: 'populateSelectedArtists',
+	    value: function populateSelectedArtists(value) {
+	      this.props.populate(value);
 	    }
+	  }, {
+	    key: 'setActiveSlider',
+	    value: function setActiveSlider(value) {
+	      this.setState({
+	        active: 3
+	      });
+	      // console.log(this.state.active)
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var _this2 = this;
 
-	    _createClass(SliderArtists, [{
-	        key: 'populateSelectedArtists',
-	        value: function populateSelectedArtists(value) {
-	            this.props.populate(value);
-	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-	            var that = this;
-	            var content = this.props.artists.map(function (elem) {
+	      console.log('active is : ' + this.props.artists[this.state.active].name);
 
-	                return _react2.default.createElement(_slideArtist2.default, { src: elem.images[0].url, name: elem.name, check: elem.check, key: elem.images[0].url, populate: function populate(x) {
-	                        return that.populateSelectedArtists(x);
-	                    } }); //USE SlideArtist here
-	            });
-	            return _react2.default.createElement(
-	                _reactCoverflow2.default,
-	                {
-	                    width: 1000,
-	                    height: 300,
-	                    displayQuantityOfSide: 2,
-	                    navigation: false,
-	                    enableHeading: true
-	                },
-	                content
-	            );
-	        }
-	    }]);
+	      var that = this;
+	      var count = 0;
+	      var content = this.props.artists.filter(function (elem) {
+	        return elem.removed == false;
+	      }).map(function (elem) {
+	        return _react2.default.createElement(_slideArtist2.default, { src: elem.images[0].url, artists: _this2.props.artists, name: elem.name, test: _this2.state.active,
+	          setActive: function setActive(value) {
+	            return that.setActiveSlider(value);
+	          }, check: elem.check, key: elem.images[0].url, populate: function populate(x) {
+	            return that.populateSelectedArtists(x);
+	          } });
+	      }); //USE SlideArtist here
+	      return _react2.default.createElement(
+	        _reactCoverflow2.default,
+	        {
+	          width: 1000,
+	          height: 500,
+	          displayQuantityOfSide: 2,
+	          navigation: true,
+	          enableHeading: false,
+	          active: this.state.active
+	        },
+	        content
+	      );
+	    }
+	  }]);
 
-	    return SliderArtists;
+	  return SliderArtists;
 	}(_react2.default.Component);
 
 	exports.default = SliderArtists;
@@ -28445,13 +28521,18 @@
 	        var _this = _possibleConstructorReturn(this, (SlideArtist.__proto__ || Object.getPrototypeOf(SlideArtist)).call(this, props));
 
 	        _this.state = {
-	            check: '' };
+	            check: '', //this.props.checked,
+	            class: 'artistContainer'
+	        };
 	        return _this;
 	    }
 
 	    _createClass(SlideArtist, [{
 	        key: 'handleClick',
 	        value: function handleClick() {
+
+	            var active = this.findIndex(this.props.artists, this.props.name) + 1;
+
 	            var ph = this.props.check;
 	            if (ph == '') {
 	                this.props.populate({
@@ -28464,6 +28545,19 @@
 	                    selected: false
 	                });
 	            }
+	            this.props.setActive(active);
+	        }
+	    }, {
+	        key: 'findIndex',
+	        value: function findIndex(selection, value) {
+	            selection = selection.filter(function (elem) {
+	                return elem.removed == false;
+	            });
+	            for (var i = 0; i < selection.length; i++) {
+	                if (selection[i]['name'] == value) {
+	                    return i;
+	                }
+	            }
 	        }
 	    }, {
 	        key: 'render',
@@ -28472,7 +28566,7 @@
 
 	            return _react2.default.createElement(
 	                'div',
-	                { className: 'artistContainer' },
+	                { className: this.state.class },
 	                _react2.default.createElement(
 	                    'svg',
 	                    { height: '80', width: '80', className: 'badge' },
@@ -28641,6 +28735,7 @@
 	                if (elem.name == targetName) {
 	                    elem.selected = !elem.selected;
 	                    elem.check = elem.check == '\uF00C' ? '' : '\uF00C';
+	                    elem.removed = false;
 	                }
 	            });
 	            this.props.populate(phSelected);
@@ -28652,8 +28747,9 @@
 	            var content = this.props.selected.map(function (elem) {
 	                if (elem.selected == true) {
 	                    return _react2.default.createElement(
-	                        'div',
-	                        null,
+	                        'li',
+	                        { className: 'selectedContainer' },
+	                        _react2.default.createElement('img', { className: 'selectedArtistsImage', src: elem.images[0].url }),
 	                        _react2.default.createElement(
 	                            'span',
 	                            { className: 'left' },
@@ -28672,7 +28768,11 @@
 	            return _react2.default.createElement(
 	                'div',
 	                { className: 'container' },
-	                content
+	                _react2.default.createElement(
+	                    'ul',
+	                    null,
+	                    content
+	                )
 	            );
 	        }
 	    }]);
@@ -28872,9 +28972,11 @@
 	        _this.state = {
 	            artists: [],
 	            token: localStorage.getItem('token'),
-	            items: ['Dance', 'Instrumental', 'Vocals', 'Energy', 'Beats per minute', 'Audiance included'],
+	            items: [{ name: 'Dance', feature: 'danceability' }, { name: 'Instrumental', feature: 'instrumentalness' }, { name: 'Emotion', feature: 'valence' }, { name: 'Energy', feature: 'energy' }, { name: 'Tempo', feature: 'tempo' }, { name: 'Audiance included', feature: 'liveness' }],
 	            criteria: {},
-	            songs: []
+	            songs: [],
+	            playlistName: "",
+	            filterState: true
 	        };
 	        return _this;
 	    }
@@ -28920,15 +29022,16 @@
 	            var albums = [];
 	            for (var i = 0; i < missingArtists.length; i++) {
 	                if (missingArtists[i].skipCheck != true && missingArtists[i].selected == true) {
-	                    var req = _spotifyApi2.default.getArtistAlbums(this.state.token, missingArtists[i].id);
+	                    var req = _spotifyApi2.default.getArtistAlbums(this.state.token, missingArtists[i].id, missingArtists[i].name);
 	                    albums.push(req);
+	                    missingArtists[i].songCheck = true;
 	                }
 	            }
 	            Promise.all(albums).then(function (results) {
 	                var tracks = [];
 	                results = flatten(results);
 	                for (var _i = 0; _i < results.length; _i++) {
-	                    var _req = _spotifyApi2.default.getAlbumTracks(that.state.token, results[_i].id);
+	                    var _req = _spotifyApi2.default.getAlbumTracks(that.state.token, results[_i].id, results[_i].artistName);
 	                    tracks.push(_req);
 	                }
 	                Promise.all(tracks).then(function (results) {
@@ -28936,12 +29039,20 @@
 	                    console.log("Tracks results : ", results);
 	                    var trackFeatures = [];
 	                    var stringOfIds = "";
+	                    var names = void 0,
+	                        artists = [];
 	                    for (var _i2 = 0; _i2 < results.length; _i2 += 99) {
 	                        stringOfIds = results.slice(_i2, _i2 + 99).map(function (elem) {
 	                            return elem.id;
 	                        }).join(',');
-	                        console.log("String of IDs : ", stringOfIds);
-	                        var _req2 = _spotifyApi2.default.getTrackFeatures(that.state.token, stringOfIds);
+	                        names = results.slice(_i2, _i2 + 99).map(function (elem) {
+	                            return elem.name;
+	                        });
+	                        artists = results.slice(_i2, _i2 + 99).map(function (elem) {
+	                            return elem.artistName;
+	                        });
+	                        //console.log("String of IDs : ", stringOfIds);
+	                        var _req2 = _spotifyApi2.default.getTrackFeatures(that.state.token, stringOfIds, artists, names);
 	                        trackFeatures.push(_req2);
 	                    }
 	                    Promise.all(trackFeatures).then(function (results) {
@@ -28987,48 +29098,72 @@
 	            var _this2 = this;
 
 	            var that = this;
-	            return _react2.default.createElement(
-	                'div',
-	                { className: 'filterContainer' },
-	                _react2.default.createElement(
-	                    'ul',
-	                    { onChange: function onChange(event) {
-	                            return _this2.onSortEnd(event);
-	                        }, className: 'filters' },
-	                    this.state.items.map(function (value, index) {
-	                        return _react2.default.createElement(
-	                            'li',
-	                            { className: 'filters', key: value },
-	                            _react2.default.createElement(_audioFilter2.default, { value: value, criteriaUpdate: function criteriaUpdate(values, name) {
-	                                    return _this2.updateCriteria(values, name);
-	                                } })
-	                        );
-	                    })
-	                ),
-	                _react2.default.createElement(
-	                    'button',
-	                    { onClick: function onClick() {
-	                            return console.log(_this2.state.songs);
-	                        } },
-	                    'Console log'
-	                ),
-	                _react2.default.createElement(
-	                    'button',
+	            var content = "";
+	            if (that.state.filterState == true) {
+	                content = _react2.default.createElement(
+	                    'div',
+	                    { className: 'filterContainer' },
+	                    _react2.default.createElement(
+	                        'ul',
+	                        { onChange: function onChange(event) {
+	                                return _this2.onSortEnd(event);
+	                            }, className: 'filters' },
+	                        this.state.items.map(function (value) {
+	                            return _react2.default.createElement(
+	                                'li',
+	                                { className: 'filters', key: value.name },
+	                                _react2.default.createElement(_audioFilter2.default, { feature: value.feature, value: value.name, criteriaUpdate: function criteriaUpdate(values, name) {
+	                                        return _this2.updateCriteria(values, name);
+	                                    } })
+	                            );
+	                        })
+	                    ),
+	                    _react2.default.createElement(
+	                        'button',
+	                        { onClick: function onClick() {
+	                                return console.log(_this2.state.songs);
+	                            } },
+	                        'Console log'
+	                    ),
+	                    _react2.default.createElement(
+	                        'button',
+	                        null,
+	                        _react2.default.createElement(
+	                            _reactRouter.Link,
+	                            { to: { pathname: 'home', state: { artists: that.state.artists } } },
+	                            'Back to selection'
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        'button',
+	                        { onClick: function onClick() {
+	                                return _this2.setState({ filterState: false });
+	                            } },
+	                        'Filters set!'
+	                    )
+	                );
+	            } else {
+	                content = _react2.default.createElement(
+	                    'div',
 	                    null,
 	                    _react2.default.createElement(
-	                        _reactRouter.Link,
-	                        { to: { pathname: 'home', state: { artists: that.state.artists } } },
-	                        'Back to selection'
+	                        'div',
+	                        { className: 'center' },
+	                        'Enter a name for your playlist:'
+	                    ),
+	                    _react2.default.createElement('input', { value: this.state.playlistName, onChange: function onChange(e) {
+	                            return _this2.setState({ playlistName: e.target.value });
+	                        } }),
+	                    _react2.default.createElement(
+	                        'button',
+	                        { onClick: function onClick() {
+	                                return _spotifyApi2.default.getCurrentUserId(_this2.state.token, "Awesome spotify api playlist", _spotifyApi2.default.sortSongs(_this2.state.songs, _this2.state.criteria, 20), that.state.playlistName);
+	                            } /**/ },
+	                        'Create playlist'
 	                    )
-	                ),
-	                _react2.default.createElement(
-	                    'button',
-	                    { onClick: function onClick() {
-	                            return console.log(_this2.state.criteria);
-	                        } /*SpotifyApi.getCurrentUserId(this.state.token, "Awesome spotify api playlist")*/ },
-	                    'Create playlist'
-	                )
-	            );
+	                );
+	            }
+	            return content;
 	        }
 	    }]);
 
@@ -36378,8 +36513,8 @@
 	      this.setState({
 	        values: values
 	      });
-	      console.log(this.props.values);
-	      this.props.criteriaUpdate(this.state.values, this.props.value);
+	      console.log(this.state.values);
+	      this.props.criteriaUpdate(this.state.values, this.props.feature);
 	    }
 	  }, {
 	    key: 'render',
@@ -38312,7 +38447,7 @@
 
 
 	// module
-	exports.push([module.id, ".filters {\n  list-style-type: none !important; }\n\n.handle {\n  margin-left: -2em;\n  float: left; }\n\n.input {\n  margin-left: 2em; }\n\n.form {\n  margin: auto;\n  display: block;\n  text-align: center; }\n\nul {\n  padding: 0; }\n\n.filterContainer {\n  text-align: center; }\n\nbutton {\n  margin: auto;\n  display: block; }\n\n.slider {\n  margin: 0 auto;\n  padding: 40px;\n  width: 80%;\n  color: #333;\n  background: #419be0; }\n\n.coverflow__cover__25-7e {\n  box-shadow: none !important; }\n\n.artistContainer {\n  margin-top: -4em; }\n\n.coverflow__container__1P-xE {\n  background: black !important; }\n\nsvg text {\n  font-family: FontAwesome; }\n\n.badge {\n  top: 5em;\n  position: relative;\n  left: 11em; }\n\n.selectedArtists {\n  background-size: contain;\n  width: 5em;\n  height: 6em;\n  background-repeat: no-repeat;\n  opacity: 0.9; }\n\n.buttonRemove {\n  background: none;\n  border: none;\n  color: red; }\n\n.left {\n  float: left;\n  line-height: 1em; }\n\n.InputRange-slider {\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: #01a982;\n  border: 1px solid #01a982;\n  border-radius: 100%;\n  cursor: pointer;\n  display: block;\n  height: 1rem;\n  margin-left: -0.5rem;\n  margin-top: -0.65rem;\n  outline: none;\n  position: absolute;\n  top: 50%;\n  transition: -webkit-transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  width: 1rem; }\n\n.InputRange-slider:active {\n  -webkit-transform: scale(1.3);\n  transform: scale(1.3); }\n\n.InputRange-slider:focus {\n  box-shadow: 0 0 0 5px rgba(63, 81, 181, 0.2); }\n\n.InputRange.is-disabled .InputRange-slider {\n  background: #cccccc;\n  border: 1px solid #cccccc;\n  box-shadow: none;\n  -webkit-transform: none;\n  transform: none; }\n\n.InputRange-sliderContainer {\n  transition: left 0.3s ease-out; }\n\n.InputRange-label {\n  color: #aaaaaa;\n  font-family: \"Helvetica Neue\", san-serif;\n  font-size: 0.8rem;\n  white-space: nowrap; }\n\n.InputRange-label--min,\n.InputRange-label--max {\n  bottom: -1.4rem;\n  position: absolute; }\n\n.InputRange-label--min {\n  left: 0; }\n\n.InputRange-label--max {\n  right: 0; }\n\n.InputRange-label--value {\n  position: absolute;\n  top: -1.8rem; }\n\n.InputRange-labelContainer {\n  left: -50%;\n  position: relative; }\n\n.InputRange-label--max .InputRange-labelContainer {\n  left: 50%; }\n\n.InputRange-track {\n  background: #eeeeee;\n  border-radius: 0.3rem;\n  cursor: pointer;\n  display: block;\n  height: 0.3rem;\n  position: relative;\n  transition: left 0.3s ease-out, width 0.3s ease-out; }\n\n.InputRange.is-disabled .InputRange-track {\n  background: #eeeeee; }\n\n.InputRange-track--container {\n  left: 0;\n  margin-top: -0.15rem;\n  position: absolute;\n  right: 0;\n  top: 50%; }\n\n.InputRange-track--active {\n  background: #01a982; }\n\n.InputRange {\n  height: 1rem;\n  position: relative;\n  width: 100%; }\n\n.skewedBanner {\n  float: left;\n  color: #84bd00;\n  background-color: black;\n  transform: skew(-10deg);\n  -webkit-transform: skew(-10deg);\n  -moz-transform: skew(-10deg);\n  text-align: center;\n  line-height: 2.5em;\n  width: 33.3333%;\n  height: 3rem; }\n  .skewedBanner.inverted {\n    color: black;\n    background-color: #84bd00; }\n\n.bannerContainer {\n  width: 100%;\n  background: black;\n  height: 3rem; }\n\n.fa-chevron-right {\n  float: right !important; }\n", ""]);
+	exports.push([module.id, ".filters {\n  list-style-type: none !important; }\n\nul.filters {\n  padding-top: 5%; }\n\n.input {\n  margin: auto; }\n\n.form {\n  margin: auto;\n  display: block;\n  text-align: center; }\n\nul {\n  padding: 0; }\n\n.filterContainer {\n  text-align: center; }\n\nbutton {\n  margin: auto;\n  display: block; }\n\n@keyframes moveDown {\n  0% {\n    left: 0px;\n    top: 0px;\n    position: absolute; }\n  50% {\n    left: 50px;\n    top: 100px; }\n  100% {\n    left: 100px;\n    top: 200px;\n    position: absolute; } }\n\n.coverflow__cover__25-7e {\n  box-shadow: none !important;\n  width: 12.5rem;\n  height: 10rem; }\n\n.selectedContainer {\n  margin-bottom: 4em; }\n\n.selectedArtistsImage {\n  float: left;\n  width: 5em;\n  height: 4em; }\n\n.artistContainer.down {\n  animation: 1s moveDown forwards; }\n\n.slider {\n  margin: 0 auto;\n  padding: 40px;\n  width: 80%;\n  color: #333;\n  background: #419be0; }\n\n* {\n  box-shadow: none !important; }\n\n.artistContainer {\n  margin-top: -4em; }\n\n.coverflow__container__1P-xE {\n  background: #84bd00 !important; }\n\nsvg text {\n  font-family: FontAwesome; }\n\n.badge {\n  top: 5em;\n  position: relative;\n  left: 11em; }\n\n.selectedArtists {\n  background-size: contain;\n  width: 5em;\n  height: 6em;\n  background-repeat: no-repeat;\n  opacity: 0.9; }\n\n.buttonRemove {\n  background: none;\n  border: none;\n  color: red; }\n\n.left {\n  float: left;\n  line-height: 1em; }\n\n.InputRange-slider {\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: #01a982;\n  border: 1px solid #01a982;\n  border-radius: 100%;\n  cursor: pointer;\n  display: block;\n  height: 1rem;\n  margin-left: -0.5rem;\n  margin-top: -0.65rem;\n  outline: none;\n  position: absolute;\n  top: 50%;\n  transition: -webkit-transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  width: 1rem; }\n\n.InputRange-slider:active {\n  -webkit-transform: scale(1.3);\n  transform: scale(1.3); }\n\n.InputRange-slider:focus {\n  box-shadow: 0 0 0 5px rgba(63, 81, 181, 0.2); }\n\n.InputRange.is-disabled .InputRange-slider {\n  background: #cccccc;\n  border: 1px solid #cccccc;\n  box-shadow: none;\n  -webkit-transform: none;\n  transform: none; }\n\n.InputRange-sliderContainer {\n  transition: left 0.3s ease-out; }\n\n.InputRange-label {\n  color: #aaaaaa;\n  font-family: \"Helvetica Neue\", san-serif;\n  font-size: 0.8rem;\n  white-space: nowrap; }\n\n.InputRange-label--min,\n.InputRange-label--max {\n  bottom: -1.4rem;\n  position: absolute; }\n\n.InputRange-label--min {\n  left: 0; }\n\n.InputRange-label--max {\n  right: 0; }\n\n.InputRange-label--value {\n  position: absolute;\n  top: -1.8rem; }\n\n.InputRange-labelContainer {\n  left: -50%;\n  position: relative; }\n\n.InputRange-label--max .InputRange-labelContainer {\n  left: 50%; }\n\n.InputRange-track {\n  background: #eeeeee;\n  border-radius: 0.3rem;\n  cursor: pointer;\n  display: block;\n  height: 0.3rem;\n  position: relative;\n  transition: left 0.3s ease-out, width 0.3s ease-out; }\n\n.InputRange.is-disabled .InputRange-track {\n  background: #eeeeee; }\n\n.InputRange-track--container {\n  left: 0;\n  margin-top: -0.15rem;\n  position: absolute;\n  right: 0;\n  top: 50%; }\n\n.InputRange-track--active {\n  background: #01a982; }\n\n.InputRange {\n  height: 1rem;\n  position: relative;\n  width: 100%; }\n\n.skewedBanner {\n  float: left;\n  color: #84bd00;\n  background-color: black;\n  transform: skewX(-10deg);\n  -webkit-transform: skew(-10deg);\n  -moz-transform: skew(-10deg);\n  text-align: center;\n  line-height: 2.5em;\n  width: 33.3333%;\n  height: 3rem; }\n  .skewedBanner.inverted {\n    color: black;\n    background-color: #84bd00; }\n\n.bannerContainer {\n  width: 100%;\n  background: black;\n  height: 3rem; }\n\n.fa-chevron-right {\n  float: right !important; }\n\nbody {\n  background: #84bd00; }\n\nul {\n  list-style-type: none; }\n", ""]);
 
 	// exports
 

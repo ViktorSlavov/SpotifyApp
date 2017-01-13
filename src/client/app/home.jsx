@@ -14,7 +14,7 @@ class Home extends React.Component {
             artists: '',
             authenticated: '',
             topSliderArtists: [],
-            songs: []
+            songs: [],
         }
         
     }
@@ -24,13 +24,14 @@ class Home extends React.Component {
            if(elem.name == value.name){
                elem.selected = !elem.selected;
                elem.check = (elem.check == "\uf00c" ? '':'\uf00c');
+              // elem.removed = value.removed;
            }
            return elem;
        })
        this.setState({
            topSliderArtists: phSelected
        })
-       console.log(this.state.topSliderArtists)
+       
    }
    componentWillMount(){
        let selected;
@@ -61,6 +62,7 @@ class Home extends React.Component {
                     elem.selected = false;
                     elem.check = '';
                     elem.songsCheck = false;
+                    elem.removed = false;
                     return elem;
                 })
                 that.setState({
@@ -71,7 +73,6 @@ class Home extends React.Component {
         }
     
        
-        console.log(this.state.topSliderArtists)
    }     
     
     render(){
@@ -83,7 +84,7 @@ class Home extends React.Component {
                 <div>
                     <Banner/>
                     <div>
-                        <SliderArtists artists={this.state.topSliderArtists} populate={(elem)=>that.populateSelectedArtists(elem)}/>
+                        <SliderArtists artists={this.state.topSliderArtists} active={4} populate={(elem)=>that.populateSelectedArtists(elem)}/>
                         <SelectedArtists populate={(elem)=>that.populateSelectedArtists(elem)} selected={this.state.topSliderArtists}/>
                         <button>
                         <Link to={{ pathname: 'filter', state: { artists: that.state.topSliderArtists } }} >Create playlist</Link>

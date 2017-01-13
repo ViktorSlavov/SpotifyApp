@@ -1,16 +1,15 @@
 $filter-color: #01a982;
 
 .filters {
+
   list-style-type: none!important;
 }
-
-.handle {
-  margin-left:-2em;
-  float:left;
+ul.filters{
+    padding-top:5%;
 }
 
 .input {
-  margin-left:2em;
+  margin:auto;
 }
 
 .form {
@@ -32,6 +31,32 @@ button {
   display: block;
 }
 
+@keyframes moveDown {
+    0%   {left:0px; top:0px; position:absolute}
+    50%  { left:50px; top:100px;}
+    100% { left:100px; top:200px; position: absolute}
+}
+.coverflow__cover__25-7e {
+  box-shadow: none!important;
+  width: 12.5rem;
+  height: 10rem;
+  
+}
+
+.selectedContainer {
+  margin-bottom:4em;
+}
+
+.selectedArtistsImage {
+  float:left;
+  width:5em;
+  height: 4em;
+}
+
+.artistContainer.down{
+    animation: 1s moveDown forwards;
+}
+
 .slider {
   margin: 0 auto;
   padding: 40px;
@@ -40,19 +65,16 @@ button {
   background: #419be0;
 }
 
-.coverflow__cover__25-7e {
-  box-shadow: none!important;
-  // width:5em;
-  // height: 5em;
 
+* {
+   box-shadow: none!important;
 }
-
 .artistContainer{
   margin-top:-4em;
 }
 
 .coverflow__container__1P-xE{
-  background:black!important;
+  background:#84bd00!important;
 }
 
 svg text {
