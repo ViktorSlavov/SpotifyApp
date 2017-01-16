@@ -14,22 +14,28 @@ class Home extends React.Component {
             artists: '',
             authenticated: '',
             topSliderArtists: [],
+            selectedArtists: [], //need this one to maintain the correct order of choices;
             songs: [],
         }
         
     }
    populateSelectedArtists(value){
        let phSelected = this.state.topSliderArtists;
+       let orderOfSelection = this.state.selectedArtists;
        phSelected.map(function(elem){
            if(elem.name == value.name){
                elem.selected = !elem.selected;
                elem.check = (elem.check == "\uf00c" ? '':'\uf00c');
-              // elem.removed = value.removed;
+               elem.removed = value.removed;
+               orderOfSelection.push(elem);
            }
+           
            return elem;
        })
+       
        this.setState({
-           topSliderArtists: phSelected
+           topSliderArtists: phSelected,
+           selectedArtists: orderOfSelection
        })
        
    }
@@ -85,7 +91,7 @@ class Home extends React.Component {
                     <Banner/>
                     <div>
                         <SliderArtists artists={this.state.topSliderArtists} active={4} populate={(elem)=>that.populateSelectedArtists(elem)}/>
-                        <SelectedArtists populate={(elem)=>that.populateSelectedArtists(elem)} selected={this.state.topSliderArtists}/>
+                        <SelectedArtists populate={(elem)=>that.populateSelectedArtists(elem)} selected={this.state.selectedArtists}/>
                         <button>
                         <Link to={{ pathname: 'filter', state: { artists: that.state.topSliderArtists } }} >Create playlist</Link>
                         </button>
