@@ -31,20 +31,35 @@ button {
   display: block;
 }
 
-@keyframes moveDown {
-    0%   {left:0px; top:0px; position:absolute}
-    50%  { left:50px; top:100px;}
-    100% { left:100px; top:200px; position: absolute}
+@keyframes moveLeft {
+   from { opacity: 1; }
+    to   { opacity: 0; }
+
 }
 .coverflow__cover__25-7e {
   box-shadow: none!important;
-  width: 12.5rem;
+  width: 13.9rem;
   height: 10rem;
   
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.coverflow__stage__14oqC {
+  pointer-events: all!important;
+}
+
+.fadeInAnimation {
+  animation: 0.3 fadeIn;
+}
+
 .selectedContainer {
   margin-bottom:4em;
+  width:100%;
+  float:left;
 }
 
 .selectedArtistsImage {
@@ -53,8 +68,8 @@ button {
   height: 4em;
 }
 
-.artistContainer.down{
-    animation: 1s moveDown forwards;
+.artistContainer.left{
+    animation: 0.5s moveLeft forwards;
 }
 
 .slider {
@@ -70,7 +85,7 @@ button {
    box-shadow: none!important;
 }
 .artistContainer{
-  margin-top:-4em;
+  //margin-top:-4em;
 }
 
 .coverflow__container__1P-xE{

@@ -27,8 +27,8 @@ class Login extends React.Component{
             token: ''
         }
     }
-    
-    buttonClick(){
+
+    componentDidMount(){
         var spotifyAuthUrl = url;
         for(let key in requestOptions){
             spotifyAuthUrl += `&${key}=${requestOptions[key]}`;
@@ -36,13 +36,11 @@ class Login extends React.Component{
         //this.setState({spotifyAuthUrl});
         window.open(spotifyAuthUrl,"_self");
     }
+    
 
     render(){
         return (
-            <div>
-                <button onClick={()=> this.buttonClick()}>Login Button Boyz</button>
-                {this.props.children}
-            </div>
+            <div>Loading...</div>
         )
     }
 }

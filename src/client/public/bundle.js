@@ -27330,8 +27330,8 @@
 	    }
 
 	    _createClass(Login, [{
-	        key: 'buttonClick',
-	        value: function buttonClick() {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
 	            var spotifyAuthUrl = url;
 	            for (var key in requestOptions) {
 	                spotifyAuthUrl += '&' + key + '=' + requestOptions[key];
@@ -27342,19 +27342,10 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this2 = this;
-
 	            return _react2.default.createElement(
 	                'div',
 	                null,
-	                _react2.default.createElement(
-	                    'button',
-	                    { onClick: function onClick() {
-	                            return _this2.buttonClick();
-	                        } },
-	                    'Login Button Boyz'
-	                ),
-	                this.props.children
+	                'Loading...'
 	            );
 	        }
 	    }]);
@@ -27423,6 +27414,7 @@
 	            artists: '',
 	            authenticated: '',
 	            topSliderArtists: [],
+	            selectedArtists: [], //need this one to maintain the correct order of choices;
 	            songs: []
 	        };
 
@@ -27433,16 +27425,21 @@
 	        key: 'populateSelectedArtists',
 	        value: function populateSelectedArtists(value) {
 	            var phSelected = this.state.topSliderArtists;
+	            var orderOfSelection = this.state.selectedArtists;
 	            phSelected.map(function (elem) {
 	                if (elem.name == value.name) {
 	                    elem.selected = !elem.selected;
 	                    elem.check = elem.check == '\uF00C' ? '' : '\uF00C';
-	                    // elem.removed = value.removed;
+	                    elem.removed = value.removed;
+	                    orderOfSelection.push(elem);
 	                }
+
 	                return elem;
 	            });
+
 	            this.setState({
-	                topSliderArtists: phSelected
+	                topSliderArtists: phSelected,
+	                selectedArtists: orderOfSelection
 	            });
 	        }
 	    }, {
@@ -27512,7 +27509,7 @@
 	                            } }),
 	                        _react2.default.createElement(_selectedArtists2.default, { populate: function populate(elem) {
 	                                return that.populateSelectedArtists(elem);
-	                            }, selected: this.state.topSliderArtists }),
+	                            }, selected: this.state.selectedArtists }),
 	                        _react2.default.createElement(
 	                            'button',
 	                            null,
@@ -27850,7 +27847,7 @@
 	    _this.state = {
 	      artists: '',
 	      selected: [],
-	      active: 2
+	      active: 3
 
 	    };
 	    // this.populateSelectedArtists = this.populateSelectedArtists.bind(this);
@@ -27865,18 +27862,17 @@
 	  }, {
 	    key: 'setActiveSlider',
 	    value: function setActiveSlider(value) {
+	      console.log(value);
 	      this.setState({
-	        active: 3
+	        active: value
 	      });
-	      // console.log(this.state.active)
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
 	      var _this2 = this;
 
-	      console.log('active is : ' + this.props.artists[this.state.active].name);
-
+	      console.log('active is : ' + this.state.active);
 	      var that = this;
 	      var count = 0;
 	      var content = this.props.artists.filter(function (elem) {
@@ -27890,16 +27886,21 @@
 	          } });
 	      }); //USE SlideArtist here
 	      return _react2.default.createElement(
-	        _reactCoverflow2.default,
-	        {
-	          width: 1000,
-	          height: 500,
-	          displayQuantityOfSide: 2,
-	          navigation: true,
-	          enableHeading: false,
-	          active: this.state.active
-	        },
-	        content
+	        'div',
+	        { className: 'container' },
+	        _react2.default.createElement(
+	          _reactCoverflow2.default,
+	          {
+
+	            height: 500,
+	            displayQuantityOfSide: 2,
+	            navigation: true,
+	            enableHeading: false,
+	            active: this.state.active
+
+	          },
+	          content
+	        )
 	      );
 	    }
 	  }]);
@@ -27925,7 +27926,7 @@
 	function(e,t,n){e.exports=n(/*! /Users/andyyou/Workspace/library/react-coverflow/src/Coverflow.js */1)},/*!**************************!*\
 	  !*** ./src/Coverflow.js ***!
 	  \**************************/
-	function(e,t,n){"use strict";function r(e){return e&&e.__esModule?e:{"default":e}}Object.defineProperty(t,"__esModule",{value:!0});var o,i=n(/*! babel-runtime/core-js/object/assign */2),a=r(i),s=n(/*! babel-runtime/core-js/object/get-prototype-of */39),u=r(s),l=n(/*! babel-runtime/helpers/classCallCheck */44),c=r(l),f=n(/*! babel-runtime/helpers/createClass */45),d=r(f),p=n(/*! babel-runtime/helpers/possibleConstructorReturn */49),m=r(p),v=n(/*! babel-runtime/helpers/inherits */84),h=r(v),y=n(/*! react */92),g=r(y),b=n(/*! react-dom */93),_=r(b),x=n(/*! radium */94),w=r(x),S=n(/*! ./stylesheets/coverflow */157),k=r(S),O=n(/*! react-tap-event-plugin */161),P=r(O);(0,P["default"])();var E={move:!1,lastX:0,sign:0,lastMove:0},j=["transitionend","oTransitionEnd","otransitionend","MSTransitionEnd","webkitTransitionEnd"],C=function(){this._removePointerEvents()},M=(0,w["default"])(o=function(e){function t(e){(0,c["default"])(this,t);var n=(0,m["default"])(this,(t.__proto__||(0,u["default"])(t)).call(this,e));return n.state={current:n._center(),move:0,width:n.props.width||"auto",height:n.props.height||"auto"},n}return(0,h["default"])(t,e),(0,d["default"])(t,[{key:"componentDidMount",value:function(){var e=this;this.updateDimensions();var t=g["default"].Children.count(this.props.children);j.forEach(function(n){for(var r=0;r<t;r++){var o="figure_"+r;e.refs[o].addEventListener(n,C.bind(e))}}),window.addEventListener("resize",this.updateDimensions.bind(this)),document.addEventListener("keypress",this._keypress.bind(this),!1)}},{key:"componentWillReceiveProps",value:function(e){this.props.active!==e.active&&this.updateDimensions(e.active)}},{key:"componentWillUnmount",value:function(){var e=this,t=g["default"].Children.count(this.props.children);j.forEach(function(n){for(var r=0;r<t;r++){var o="figure_"+r;e.refs[o].removeEventListener(n,C.bind(e))}}),window.removeEventListener("resize",this.updateDimensions.bind(this)),document.removeEventListener("keypress",this._keypress.bind(this))}},{key:"updateDimensions",value:function(e){var t=this.props.displayQuantityOfSide,n=g["default"].Children.count(this.props.children),r=this._center(),o={width:_["default"].findDOMNode(this).offsetWidth,height:_["default"].findDOMNode(this).offsetHeight},i=o.width/(2*t+1),e=e||this.props.active;if("number"==typeof e&&~~e<n){e=~~e;var s=0;s=i*(r-e),o=(0,a["default"])({},o,{current:e,move:s})}this.setState(o)}},{key:"render",value:function(){var e=this.props.enableScroll,t=this.state,n=t.width,r=t.height;return g["default"].createElement("div",{className:k["default"].container,style:[{width:n+"px",height:r+"px"},this.props.media],onWheel:e?this._handleWheel.bind(this):null,onTouchStart:this._handleTouchStart.bind(this),onTouchMove:this._handleTouchMove.bind(this)},g["default"].createElement("div",{className:k["default"].coverflow},g["default"].createElement("div",{className:k["default"].preloader}),g["default"].createElement("div",{className:k["default"].stage,ref:"stage"},this._renderFigureNodes()),this.props.navigation&&g["default"].createElement("div",{className:k["default"].actions},g["default"].createElement("button",{type:"button",className:k["default"].button,onClick:this._handlePrevFigure.bind(this)},"Previous"),g["default"].createElement("button",{type:"button",className:k["default"].button,onClick:this._handleNextFigure.bind(this)},"Next"))))}},{key:"_center",value:function(){var e=g["default"].Children.count(this.props.children);return Math.floor(e/2)}},{key:"_keypress",value:function(e){39===e.keyCode?this._handlePrevFigure():37===e.keyCode&&this._handleNextFigure()}},{key:"_handleFigureStyle",value:function(e,t){var n=this.props.displayQuantityOfSide,r=this.state.width,o={},i=r/(2*n+1),a=g["default"].Children.count(this.props.children),s=a%2===0?-r/10:0,u=n-Math.abs(t-e),l=1===u?.95:.5;return l=2===u?.92:l,l=3===u?.9:l,l=t===e?1:l,e===t?(o.width=i+"px",o.transform="translateX("+(this.state.move+s)+"px) scale(1.2)",o.zIndex=""+(10-u),o.opacity=l):e<t?(o.width=i+"px",o.transform="translateX("+(this.state.move+s)+"px) rotateY(40deg)",o.zIndex=""+(10-u),o.opacity=l):e>t&&(o.width=i+"px",o.transform=" translateX("+(this.state.move+s)+"px) rotateY(-40deg)",o.zIndex=""+(10-u),o.opacity=l),o}},{key:"_handleFigureClick",value:function(e,t,n){if(n.preventDefault(),this.props.clickable)if(this.refs.stage.style.pointerEvents="none",this.state.current===e)"string"==typeof t?window.open(t,"_blank"):"function"==typeof t&&t(),this._removePointerEvents();else{var r=this.props.displayQuantityOfSide,o=this.state.width,i=o/(2*r+1),a=this._center()-e,s=a*i;this.setState({current:e,move:s})}}},{key:"_renderFigureNodes",value:function(){var e=this,t=this.props.enableHeading,n=g["default"].Children.map(this.props.children,function(n,r){var o=g["default"].cloneElement(n,{className:k["default"].cover}),i=e._handleFigureStyle(r,e.state.current);return g["default"].createElement("figure",{className:k["default"].figure,key:r,style:i,onClick:e._handleFigureClick.bind(e,r,o.props["data-action"]),ref:"figure_"+r},o,t&&g["default"].createElement("div",{className:k["default"].text},o.props.alt))});return n}},{key:"_removePointerEvents",value:function(){this.refs.stage.style.pointerEvents="auto"}},{key:"_handlePrevFigure",value:function(){var e=this.props.displayQuantityOfSide,t=this.state.width,n=this.state.current,r=t/(2*e+1),o=this._center()-(n-1),i=o*r;n-1>=0&&(this.setState({current:n-1,move:i}),E.lastMove=i)}},{key:"_handleNextFigure",value:function(){var e=this.props.displayQuantityOfSide,t=this.state.width,n=this.state.current,r=t/(2*e+1),o=this._center()-(n+1),i=o*r;n+1<this.props.children.length&&(this.setState({current:n+1,move:i}),E.lastMove=i)}},{key:"_handleWheel",value:function(e){e.preventDefault();var t=e.deltaY*-120,n=Math.ceil(Math.abs(t)/120);if(n>0){var r=Math.abs(t)/t,o=null;if(r>0?o=this._handlePrevFigure.bind(this):r<0&&(o=this._handleNextFigure.bind(this)),"function"==typeof o)for(var i=0;i<n;i++)o()}}},{key:"_handleTouchStart",value:function(e){E.lastX=e.nativeEvent.touches[0].clientX,E.lastMove=this.state.move}},{key:"_handleTouchMove",value:function(e){e.preventDefault();var t=this.props.displayQuantityOfSide,n=this.state.width,r=e.nativeEvent.touches[0].clientX,o=E.lastX,i=n/(2*t+1),a=r-o,s=E.lastMove-a,u=Math.abs(a)/a;if(Math.abs(s)>=i){var l=null;u>0?l=this._handlePrevFigure.bind(this):u<0&&(l=this._handleNextFigure.bind(this)),"function"==typeof l&&l()}}}]),t}(y.Component))||o;M.propTypes={displayQuantityOfSide:g["default"].PropTypes.number.isRequired,navigation:g["default"].PropTypes.bool,enableHeading:g["default"].PropTypes.bool,enableScroll:g["default"].PropTypes.bool,active:g["default"].PropTypes.number},M.defaultProps={navigation:!1,enableHeading:!0,enableScroll:!0,clickable:!0},M.displayName="Coverflow",t["default"]=M},/*!**************************************************!*\
+	function(e,t,n){"use strict";function r(e){return e&&e.__esModule?e:{"default":e}}Object.defineProperty(t,"__esModule",{value:!0});var o,i=n(/*! babel-runtime/core-js/object/assign */2),a=r(i),s=n(/*! babel-runtime/core-js/object/get-prototype-of */39),u=r(s),l=n(/*! babel-runtime/helpers/classCallCheck */44),c=r(l),f=n(/*! babel-runtime/helpers/createClass */45),d=r(f),p=n(/*! babel-runtime/helpers/possibleConstructorReturn */49),m=r(p),v=n(/*! babel-runtime/helpers/inherits */84),h=r(v),y=n(/*! react */92),g=r(y),b=n(/*! react-dom */93),_=r(b),x=n(/*! radium */94),w=r(x),S=n(/*! ./stylesheets/coverflow */157),k=r(S),O=n(/*! react-tap-event-plugin */161),P=r(O);(0,P["default"])();var E={move:!1,lastX:0,sign:0,lastMove:0},j=["transitionend","oTransitionEnd","otransitionend","MSTransitionEnd","webkitTransitionEnd"],C=function(){this._removePointerEvents()},M=(0,w["default"])(o=function(e){function t(e){(0,c["default"])(this,t);var n=(0,m["default"])(this,(t.__proto__||(0,u["default"])(t)).call(this,e));return n.state={current:n._center(),move:0,width:n.props.width||"auto",height:n.props.height||"auto"},n}return(0,h["default"])(t,e),(0,d["default"])(t,[{key:"componentDidMount",value:function(){var e=this;this.updateDimensions();var t=g["default"].Children.count(this.props.children);j.forEach(function(n){for(var r=0;r<t;r++){var o="figure_"+r;e.refs[o].addEventListener(n,C.bind(e))}}),window.addEventListener("resize",this.updateDimensions.bind(this)),document.addEventListener("keypress",this._keypress.bind(this),!1)}},{key:"componentWillReceiveProps",value:function(e){this.updateDimensions(e.active);}},{key:"componentWillUnmount",value:function(){var e=this,t=g["default"].Children.count(this.props.children);j.forEach(function(n){for(var r=0;r<t;r++){var o="figure_"+r;e.refs[o].removeEventListener(n,C.bind(e))}}),window.removeEventListener("resize",this.updateDimensions.bind(this)),document.removeEventListener("keypress",this._keypress.bind(this))}},{key:"updateDimensions",value:function(e){var t=this.props.displayQuantityOfSide,n=g["default"].Children.count(this.props.children),r=this._center(),o={width:_["default"].findDOMNode(this).offsetWidth,height:_["default"].findDOMNode(this).offsetHeight},i=o.width/(2*t+1),e=e||this.props.active;if("number"==typeof e&&~~e<n){e=~~e;var s=0;s=i*(r-e),o=(0,a["default"])({},o,{current:e,move:s})}this.setState(o)}},{key:"render",value:function(){var e=this.props.enableScroll,t=this.state,n=t.width,r=t.height;return g["default"].createElement("div",{className:k["default"].container,style:[{width:n+"px",height:r+"px"},this.props.media],onWheel:e?this._handleWheel.bind(this):null,onTouchStart:this._handleTouchStart.bind(this),onTouchMove:this._handleTouchMove.bind(this)},g["default"].createElement("div",{className:k["default"].coverflow},g["default"].createElement("div",{className:k["default"].preloader}),g["default"].createElement("div",{className:k["default"].stage,ref:"stage"},this._renderFigureNodes()),this.props.navigation&&g["default"].createElement("div",{className:k["default"].actions},g["default"].createElement("button",{type:"button",className:k["default"].button,onClick:this._handlePrevFigure.bind(this)},"Previous"),g["default"].createElement("button",{type:"button",className:k["default"].button,onClick:this._handleNextFigure.bind(this)},"Next"))))}},{key:"_center",value:function(){var e=g["default"].Children.count(this.props.children);return Math.floor(e/2)}},{key:"_keypress",value:function(e){39===e.keyCode?this._handlePrevFigure():37===e.keyCode&&this._handleNextFigure()}},{key:"_handleFigureStyle",value:function(e,t){var n=this.props.displayQuantityOfSide,r=this.state.width,o={},i=r/(2*n+1),a=g["default"].Children.count(this.props.children),s=a%2===0?-r/10:0,u=n-Math.abs(t-e),l=1===u?.95:.5;return l=2===u?.92:l,l=3===u?.9:l,l=t===e?1:l,e===t?(o.width=i+"px",o.transform="translateX("+(this.state.move+s)+"px) scale(1.2)",o.zIndex=""+(10-u),o.opacity=l):e<t?(o.width=i+"px",o.transform="translateX("+(this.state.move+s)+"px) rotateY(40deg)",o.zIndex=""+(10-u),o.opacity=l):e>t&&(o.width=i+"px",o.transform=" translateX("+(this.state.move+s)+"px) rotateY(-40deg)",o.zIndex=""+(10-u),o.opacity=l),o}},{key:"_handleFigureClick",value:function(e,t,n){if(n.preventDefault(),this.props.clickable)if(this.refs.stage.style.pointerEvents="none",this.state.current===e)"string"==typeof t?window.open(t,"_blank"):"function"==typeof t&&t(),this._removePointerEvents();else{var r=this.props.displayQuantityOfSide,o=this.state.width,i=o/(2*r+1),a=this._center()-e,s=a*i;this.setState({current:e,move:s})}}},{key:"_renderFigureNodes",value:function(){var e=this,t=this.props.enableHeading,n=g["default"].Children.map(this.props.children,function(n,r){var o=g["default"].cloneElement(n,{className:k["default"].cover}),i=e._handleFigureStyle(r,e.state.current);return g["default"].createElement("figure",{className:k["default"].figure,key:r,style:i,onClick:e._handleFigureClick.bind(e,r,o.props["data-action"]),ref:"figure_"+r},o,t&&g["default"].createElement("div",{className:k["default"].text},o.props.alt))});return n}},{key:"_removePointerEvents",value:function(){this.refs.stage.style.pointerEvents="auto"}},{key:"_handlePrevFigure",value:function(){var e=this.props.displayQuantityOfSide,t=this.state.width,n=this.state.current,r=t/(2*e+1),o=this._center()-(n-1),i=o*r;n-1>=0&&(this.setState({current:n-1,move:i}),E.lastMove=i)}},{key:"_handleNextFigure",value:function(){var e=this.props.displayQuantityOfSide,t=this.state.width,n=this.state.current,r=t/(2*e+1),o=this._center()-(n+1),i=o*r;n+1<this.props.children.length&&(this.setState({current:n+1,move:i}),E.lastMove=i)}},{key:"_handleWheel",value:function(e){e.preventDefault();var t=e.deltaY*-120,n=Math.ceil(Math.abs(t)/120);if(n>0){var r=Math.abs(t)/t,o=null;if(r>0?o=this._handlePrevFigure.bind(this):r<0&&(o=this._handleNextFigure.bind(this)),"function"==typeof o)for(var i=0;i<n;i++)o()}}},{key:"_handleTouchStart",value:function(e){E.lastX=e.nativeEvent.touches[0].clientX,E.lastMove=this.state.move}},{key:"_handleTouchMove",value:function(e){e.preventDefault();var t=this.props.displayQuantityOfSide,n=this.state.width,r=e.nativeEvent.touches[0].clientX,o=E.lastX,i=n/(2*t+1),a=r-o,s=E.lastMove-a,u=Math.abs(a)/a;if(Math.abs(s)>=i){var l=null;u>0?l=this._handlePrevFigure.bind(this):u<0&&(l=this._handleNextFigure.bind(this)),"function"==typeof l&&l()}}}]),t}(y.Component))||o;M.propTypes={displayQuantityOfSide:g["default"].PropTypes.number.isRequired,navigation:g["default"].PropTypes.bool,enableHeading:g["default"].PropTypes.bool,enableScroll:g["default"].PropTypes.bool,active:g["default"].PropTypes.number},M.defaultProps={navigation:!1,enableHeading:!0,enableScroll:!0,clickable:!0},M.displayName="Coverflow",t["default"]=M},/*!**************************************************!*\
 	  !*** ./~/babel-runtime/core-js/object/assign.js ***!
 	  \**************************************************/
 	function(e,t,n){e.exports={"default":n(/*! core-js/library/fn/object/assign */3),__esModule:!0}},/*!***************************************************************!*\
@@ -28529,23 +28530,43 @@
 
 	    _createClass(SlideArtist, [{
 	        key: 'handleClick',
-	        value: function handleClick() {
+	        value: function handleClick(e) {
+	            var _this2 = this;
 
-	            var active = this.findIndex(this.props.artists, this.props.name) + 1;
+	            if (e.target.parentElement.parentElement.attributes.style.nodeValue.indexOf('opacity: 1') > -1) {
+	                (function () {
+	                    //Only center element can be selected. Needs rework
+	                    _this2.setClass(true);
 
-	            var ph = this.props.check;
-	            if (ph == '') {
-	                this.props.populate({
-	                    name: this.props.name,
-	                    selected: true
-	                });
-	            } else {
-	                this.props.populate({
-	                    name: this.props.name,
-	                    selected: false
-	                });
+	                    var that = _this2;
+	                    setTimeout(function () {
+	                        var active = that.findIndex(that.props.artists, that.props.name);
+
+	                        var ph = that.props.check;
+	                        if (ph == '') {
+	                            that.props.populate({
+	                                name: that.props.name,
+	                                selected: true,
+	                                removed: true
+	                            });
+	                        } else {
+	                            that.props.populate({
+	                                name: that.props.name,
+	                                selected: false,
+	                                removed: false
+	                            });
+	                        }
+	                        that.props.setActive(active);
+	                    }, 300);
+	                })();
 	            }
-	            this.props.setActive(active);
+	        }
+	    }, {
+	        key: 'setClass',
+	        value: function setClass() {
+	            this.setState({
+	                class: 'artistContainer left'
+	            });
 	        }
 	    }, {
 	        key: 'findIndex',
@@ -28555,30 +28576,29 @@
 	            });
 	            for (var i = 0; i < selection.length; i++) {
 	                if (selection[i]['name'] == value) {
-	                    return i;
+	                    console.log('Selection length' + selection.length);
+	                    if (i == 0) {
+	                        i = 0;
+	                        return i;
+	                    } else if (i == selection.length - 1) {
+	                        i = selection.length - 3;
+	                        return i;
+	                    } else {
+	                        return i++;
+	                    }
 	                }
 	            }
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this2 = this;
+	            var _this3 = this;
 
 	            return _react2.default.createElement(
 	                'div',
-	                { className: this.state.class },
-	                _react2.default.createElement(
-	                    'svg',
-	                    { height: '80', width: '80', className: 'badge' },
-	                    _react2.default.createElement('circle', { cx: '25', cy: '25', r: '20', stroke: 'grey', strokeWidth: '2', fill: '#fff', onClick: function onClick() {
-	                            return _this2.handleClick();
-	                        } }),
-	                    _react2.default.createElement(
-	                        'text',
-	                        { fill: 'green', fontSize: '20', x: '35%', y: '44%', textAnchor: 'middle' },
-	                        this.props.check
-	                    )
-	                ),
+	                { className: this.state.class, onClick: function onClick(e) {
+	                        return _this3.handleClick(e);
+	                    } },
 	                _react2.default.createElement('img', { src: this.props.src, className: 'coverflow__cover__25-7e' }),
 	                _react2.default.createElement(
 	                    'div',
@@ -28593,6 +28613,12 @@
 	}(_react2.default.Component);
 
 	exports.default = SlideArtist;
+
+	//SVG Badge
+	// <svg height="80" width="80" className="badge">
+	//                     <circle cx="25" cy="25" r="20" stroke="grey" strokeWidth="2" fill="#fff" onClick={(e)=>this.handleClick(e)}/>
+	//                     <text fill="green" fontSize="20" x="35%" y="44%" textAnchor="middle">{this.props.check}</text>
+	//                 </svg>
 
 /***/ },
 /* 251 */
@@ -28744,11 +28770,11 @@
 	        key: 'render',
 	        value: function render() {
 	            var that = this;
-	            var content = this.props.selected.map(function (elem) {
+	            var content = this.props.selected.reverse().map(function (elem) {
 	                if (elem.selected == true) {
 	                    return _react2.default.createElement(
 	                        'li',
-	                        { className: 'selectedContainer' },
+	                        { className: 'selectedContainer fadeInAnimation' },
 	                        _react2.default.createElement('img', { className: 'selectedArtistsImage', src: elem.images[0].url }),
 	                        _react2.default.createElement(
 	                            'span',
@@ -38447,7 +38473,7 @@
 
 
 	// module
-	exports.push([module.id, ".filters {\n  list-style-type: none !important; }\n\nul.filters {\n  padding-top: 5%; }\n\n.input {\n  margin: auto; }\n\n.form {\n  margin: auto;\n  display: block;\n  text-align: center; }\n\nul {\n  padding: 0; }\n\n.filterContainer {\n  text-align: center; }\n\nbutton {\n  margin: auto;\n  display: block; }\n\n@keyframes moveDown {\n  0% {\n    left: 0px;\n    top: 0px;\n    position: absolute; }\n  50% {\n    left: 50px;\n    top: 100px; }\n  100% {\n    left: 100px;\n    top: 200px;\n    position: absolute; } }\n\n.coverflow__cover__25-7e {\n  box-shadow: none !important;\n  width: 12.5rem;\n  height: 10rem; }\n\n.selectedContainer {\n  margin-bottom: 4em; }\n\n.selectedArtistsImage {\n  float: left;\n  width: 5em;\n  height: 4em; }\n\n.artistContainer.down {\n  animation: 1s moveDown forwards; }\n\n.slider {\n  margin: 0 auto;\n  padding: 40px;\n  width: 80%;\n  color: #333;\n  background: #419be0; }\n\n* {\n  box-shadow: none !important; }\n\n.artistContainer {\n  margin-top: -4em; }\n\n.coverflow__container__1P-xE {\n  background: #84bd00 !important; }\n\nsvg text {\n  font-family: FontAwesome; }\n\n.badge {\n  top: 5em;\n  position: relative;\n  left: 11em; }\n\n.selectedArtists {\n  background-size: contain;\n  width: 5em;\n  height: 6em;\n  background-repeat: no-repeat;\n  opacity: 0.9; }\n\n.buttonRemove {\n  background: none;\n  border: none;\n  color: red; }\n\n.left {\n  float: left;\n  line-height: 1em; }\n\n.InputRange-slider {\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: #01a982;\n  border: 1px solid #01a982;\n  border-radius: 100%;\n  cursor: pointer;\n  display: block;\n  height: 1rem;\n  margin-left: -0.5rem;\n  margin-top: -0.65rem;\n  outline: none;\n  position: absolute;\n  top: 50%;\n  transition: -webkit-transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  width: 1rem; }\n\n.InputRange-slider:active {\n  -webkit-transform: scale(1.3);\n  transform: scale(1.3); }\n\n.InputRange-slider:focus {\n  box-shadow: 0 0 0 5px rgba(63, 81, 181, 0.2); }\n\n.InputRange.is-disabled .InputRange-slider {\n  background: #cccccc;\n  border: 1px solid #cccccc;\n  box-shadow: none;\n  -webkit-transform: none;\n  transform: none; }\n\n.InputRange-sliderContainer {\n  transition: left 0.3s ease-out; }\n\n.InputRange-label {\n  color: #aaaaaa;\n  font-family: \"Helvetica Neue\", san-serif;\n  font-size: 0.8rem;\n  white-space: nowrap; }\n\n.InputRange-label--min,\n.InputRange-label--max {\n  bottom: -1.4rem;\n  position: absolute; }\n\n.InputRange-label--min {\n  left: 0; }\n\n.InputRange-label--max {\n  right: 0; }\n\n.InputRange-label--value {\n  position: absolute;\n  top: -1.8rem; }\n\n.InputRange-labelContainer {\n  left: -50%;\n  position: relative; }\n\n.InputRange-label--max .InputRange-labelContainer {\n  left: 50%; }\n\n.InputRange-track {\n  background: #eeeeee;\n  border-radius: 0.3rem;\n  cursor: pointer;\n  display: block;\n  height: 0.3rem;\n  position: relative;\n  transition: left 0.3s ease-out, width 0.3s ease-out; }\n\n.InputRange.is-disabled .InputRange-track {\n  background: #eeeeee; }\n\n.InputRange-track--container {\n  left: 0;\n  margin-top: -0.15rem;\n  position: absolute;\n  right: 0;\n  top: 50%; }\n\n.InputRange-track--active {\n  background: #01a982; }\n\n.InputRange {\n  height: 1rem;\n  position: relative;\n  width: 100%; }\n\n.skewedBanner {\n  float: left;\n  color: #84bd00;\n  background-color: black;\n  transform: skewX(-10deg);\n  -webkit-transform: skew(-10deg);\n  -moz-transform: skew(-10deg);\n  text-align: center;\n  line-height: 2.5em;\n  width: 33.3333%;\n  height: 3rem; }\n  .skewedBanner.inverted {\n    color: black;\n    background-color: #84bd00; }\n\n.bannerContainer {\n  width: 100%;\n  background: black;\n  height: 3rem; }\n\n.fa-chevron-right {\n  float: right !important; }\n\nbody {\n  background: #84bd00; }\n\nul {\n  list-style-type: none; }\n", ""]);
+	exports.push([module.id, ".filters {\n  list-style-type: none !important; }\n\nul.filters {\n  padding-top: 5%; }\n\n.input {\n  margin: auto; }\n\n.form {\n  margin: auto;\n  display: block;\n  text-align: center; }\n\nul {\n  padding: 0; }\n\n.filterContainer {\n  text-align: center; }\n\nbutton {\n  margin: auto;\n  display: block; }\n\n@keyframes moveLeft {\n  from {\n    opacity: 1; }\n  to {\n    opacity: 0; } }\n\n.coverflow__cover__25-7e {\n  box-shadow: none !important;\n  width: 13.9rem;\n  height: 10rem; }\n\n@keyframes fadeIn {\n  from {\n    opacity: 0; }\n  to {\n    opacity: 1; } }\n\n.coverflow__stage__14oqC {\n  pointer-events: all !important; }\n\n.fadeInAnimation {\n  animation: 0.3 fadeIn; }\n\n.selectedContainer {\n  margin-bottom: 4em;\n  width: 100%;\n  float: left; }\n\n.selectedArtistsImage {\n  float: left;\n  width: 5em;\n  height: 4em; }\n\n.artistContainer.left {\n  animation: 0.5s moveLeft forwards; }\n\n.slider {\n  margin: 0 auto;\n  padding: 40px;\n  width: 80%;\n  color: #333;\n  background: #419be0; }\n\n* {\n  box-shadow: none !important; }\n\n.coverflow__container__1P-xE {\n  background: #84bd00 !important; }\n\nsvg text {\n  font-family: FontAwesome; }\n\n.badge {\n  top: 5em;\n  position: relative;\n  left: 11em; }\n\n.selectedArtists {\n  background-size: contain;\n  width: 5em;\n  height: 6em;\n  background-repeat: no-repeat;\n  opacity: 0.9; }\n\n.buttonRemove {\n  background: none;\n  border: none;\n  color: red; }\n\n.left {\n  float: left;\n  line-height: 1em; }\n\n.InputRange-slider {\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: #01a982;\n  border: 1px solid #01a982;\n  border-radius: 100%;\n  cursor: pointer;\n  display: block;\n  height: 1rem;\n  margin-left: -0.5rem;\n  margin-top: -0.65rem;\n  outline: none;\n  position: absolute;\n  top: 50%;\n  transition: -webkit-transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  width: 1rem; }\n\n.InputRange-slider:active {\n  -webkit-transform: scale(1.3);\n  transform: scale(1.3); }\n\n.InputRange-slider:focus {\n  box-shadow: 0 0 0 5px rgba(63, 81, 181, 0.2); }\n\n.InputRange.is-disabled .InputRange-slider {\n  background: #cccccc;\n  border: 1px solid #cccccc;\n  box-shadow: none;\n  -webkit-transform: none;\n  transform: none; }\n\n.InputRange-sliderContainer {\n  transition: left 0.3s ease-out; }\n\n.InputRange-label {\n  color: #aaaaaa;\n  font-family: \"Helvetica Neue\", san-serif;\n  font-size: 0.8rem;\n  white-space: nowrap; }\n\n.InputRange-label--min,\n.InputRange-label--max {\n  bottom: -1.4rem;\n  position: absolute; }\n\n.InputRange-label--min {\n  left: 0; }\n\n.InputRange-label--max {\n  right: 0; }\n\n.InputRange-label--value {\n  position: absolute;\n  top: -1.8rem; }\n\n.InputRange-labelContainer {\n  left: -50%;\n  position: relative; }\n\n.InputRange-label--max .InputRange-labelContainer {\n  left: 50%; }\n\n.InputRange-track {\n  background: #eeeeee;\n  border-radius: 0.3rem;\n  cursor: pointer;\n  display: block;\n  height: 0.3rem;\n  position: relative;\n  transition: left 0.3s ease-out, width 0.3s ease-out; }\n\n.InputRange.is-disabled .InputRange-track {\n  background: #eeeeee; }\n\n.InputRange-track--container {\n  left: 0;\n  margin-top: -0.15rem;\n  position: absolute;\n  right: 0;\n  top: 50%; }\n\n.InputRange-track--active {\n  background: #01a982; }\n\n.InputRange {\n  height: 1rem;\n  position: relative;\n  width: 100%; }\n\n.skewedBanner {\n  float: left;\n  color: #84bd00;\n  background-color: black;\n  transform: skewX(-10deg);\n  -webkit-transform: skew(-10deg);\n  -moz-transform: skew(-10deg);\n  text-align: center;\n  line-height: 2.5em;\n  width: 33.33%;\n  height: 3rem; }\n  .skewedBanner.inverted {\n    color: black;\n    background-color: #84bd00; }\n\n.bannerContainer {\n  width: 100%;\n  background: black;\n  height: 3rem; }\n\n.fa-chevron-right {\n  float: right !important; }\n\nul {\n  list-style-type: none; }\n", ""]);
 
 	// exports
 
