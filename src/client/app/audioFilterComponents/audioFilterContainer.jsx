@@ -29,6 +29,7 @@ class AudioFilterContainer extends React.Component {
             criteria: {},
             songs: [],
             playlistName: "",
+            sortedSongs : [],
             filterState: true,
         }
     }
@@ -51,7 +52,7 @@ class AudioFilterContainer extends React.Component {
         let missingArtists = this.state.artists;
         console.log(missingArtists);
         missingArtists.map(function(elem){
-            if(elem.songCheck == true){
+            if(elem.songsCheck == true){
                 elem.skipCheck == true;
             }
             return elem
@@ -142,6 +143,7 @@ class AudioFilterContainer extends React.Component {
             content = <div>
                 <div className="center">Enter a name for your playlist:</div>
                 <input value={this.state.playlistName} onChange={(e) => this.setState({playlistName : e.target.value})}></input>
+                <button onClick={() => this.setState({filterState : true})}>Return to filters</button>
                 <button onClick={() => SpotifyApi.getCurrentUserId(this.state.token, "Awesome spotify api playlist", SpotifyApi.sortSongs(this.state.songs,this.state.criteria,20), that.state.playlistName)/**/}>Create playlist</button>
             </div>
         }
