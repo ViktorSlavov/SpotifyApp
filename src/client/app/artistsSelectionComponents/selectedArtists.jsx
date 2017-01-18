@@ -4,7 +4,7 @@ class SelectedArtists extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            artists: ''
+            artists: '',
         }
     }
 
@@ -15,6 +15,7 @@ class SelectedArtists extends React.Component {
             if(elem.name == targetName){
                 elem.selected = !elem.selected;
                 elem.check = (elem.check == "\uf00c" ? '':'\uf00c');
+                elem.removed = false;
             }
         })
         this.props.populate(phSelected);
@@ -22,21 +23,22 @@ class SelectedArtists extends React.Component {
 
     render(){
         let that = this;
-        let content = this.props.selected.map(function(elem){
+        let content = this.props.selected.reverse().map(function(elem){
              if(elem.selected == true){                
                 return (
-                    <div>
+                    <li className="selectedContainer fadeInAnimation">
+                        <img className="selectedArtistsImage"src={elem.images[0].url}/>
                         <span className="left">{elem.name}</span>
                         <button value={elem.name} className="buttonRemove left"><i onClick={(e)=>that.updateSelected(e)} className="fa fa-times fa-1x"></i></button>
-                    </div>
+                    </li>
                 )
             }
         })
         return (
             <div className="container">
-                
-                    {content}
-               
+                <ul >
+                        {content}
+                </ul>
             </div>
         )
     }

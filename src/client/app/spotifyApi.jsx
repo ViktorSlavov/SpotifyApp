@@ -50,6 +50,7 @@ let SpotifyApi = {
             elem = elem.uri;
             return elem
         })
+        console.log(songs,songURIs)
             let params = JSON.stringify({
                     uris : songURIs
             })

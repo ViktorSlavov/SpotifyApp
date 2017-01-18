@@ -4,6 +4,7 @@ import {Link} from 'react-router';
 import SliderArtists from './artistsSelectionComponents/sliderArtists.jsx';
 import SearchArtists from './artistsSelectionComponents/searchArtists.jsx';
 import SelectedArtists from './artistsSelectionComponents/selectedArtists.jsx';
+import Banner from './mainDesign/banner.jsx';
 class Home extends React.Component {
     
     constructor(props){
@@ -13,23 +14,30 @@ class Home extends React.Component {
             artists: '',
             authenticated: '',
             topSliderArtists: [],
-            songs: []
+            selectedArtists: [], //need this one to maintain the correct order of choices;
+            songs: [],
         }
         
     }
    populateSelectedArtists(value){
        let phSelected = this.state.topSliderArtists;
+       let orderOfSelection = this.state.selectedArtists;
        phSelected.map(function(elem){
            if(elem.name == value.name){
                elem.selected = !elem.selected;
                elem.check = (elem.check == "\uf00c" ? '':'\uf00c');
+               elem.removed = value.removed;
+               orderOfSelection.push(elem);
            }
+           
            return elem;
        })
+       
        this.setState({
-           topSliderArtists: phSelected
+           topSliderArtists: phSelected,
+           selectedArtists: orderOfSelection
        })
-       console.log(this.state.topSliderArtists)
+       
    }
    componentWillMount(){
        let selected;
@@ -60,6 +68,7 @@ class Home extends React.Component {
                     elem.selected = false;
                     elem.check = '';
                     elem.songsCheck = false;
+                    elem.removed = false;
                     return elem;
                 })
                 that.setState({
@@ -70,7 +79,6 @@ class Home extends React.Component {
         }
     
        
-        console.log(this.state.topSliderArtists)
    }     
     
     render(){
@@ -80,11 +88,14 @@ class Home extends React.Component {
             
             content = (
                 <div>
-                    <SliderArtists artists={this.state.topSliderArtists} populate={(elem)=>that.populateSelectedArtists(elem)}/>
-                    <SelectedArtists populate={(elem)=>that.populateSelectedArtists(elem)} selected={this.state.topSliderArtists}/>
-                    <button>
-                    <Link to={{ pathname: 'filter', state: { artists: that.state.topSliderArtists } }} >Create playlist</Link>
-                    </button>
+                    <Banner/>
+                    <div>
+                        <SliderArtists artists={this.state.topSliderArtists} active={4} populate={(elem)=>that.populateSelectedArtists(elem)}/>
+                        <SelectedArtists populate={(elem)=>that.populateSelectedArtists(elem)} selected={this.state.selectedArtists}/>
+                        <button>
+                        <Link to={{ pathname: 'filter', state: { artists: that.state.topSliderArtists } }} >Create playlist</Link>
+                        </button>
+                    </div>
                 </div>
             )
         } else {
