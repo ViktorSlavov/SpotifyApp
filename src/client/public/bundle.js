@@ -27344,7 +27344,7 @@
 	        value: function render() {
 	            return _react2.default.createElement(
 	                'div',
-	                null,
+	                { className: 'login' },
 	                'Loading...'
 	            );
 	        }
@@ -27415,7 +27415,9 @@
 	            authenticated: '',
 	            topSliderArtists: [],
 	            selectedArtists: [], //need this one to maintain the correct order of choices;
-	            songs: []
+	            songs: [],
+	            numberOfItems: 2,
+	            createPlaylistButton: 'playlistButton hide'
 	        };
 
 	        return _this;
@@ -27423,23 +27425,25 @@
 
 	    _createClass(Home, [{
 	        key: 'populateSelectedArtists',
-	        value: function populateSelectedArtists(value) {
+	        value: function populateSelectedArtists(value, numberOfItems) {
 	            var phSelected = this.state.topSliderArtists;
 	            var orderOfSelection = this.state.selectedArtists;
 	            phSelected.map(function (elem) {
 	                if (elem.name == value.name) {
 	                    elem.selected = !elem.selected;
 	                    elem.check = elem.check == '\uF00C' ? '' : '\uF00C';
-	                    elem.removed = value.removed;
 	                    orderOfSelection.push(elem);
 	                }
-
 	                return elem;
 	            });
-
+	            orderOfSelection = orderOfSelection.filter(function (elem) {
+	                return elem.selected == true;
+	            });
 	            this.setState({
 	                topSliderArtists: phSelected,
-	                selectedArtists: orderOfSelection
+	                selectedArtists: orderOfSelection,
+	                createPlaylistButton: orderOfSelection.length > 0 ? 'playlistButton' : 'playlistButton hide',
+	                numberOfItems: numberOfItems > 2 ? numberOfItems : 2
 	            });
 	        }
 	    }, {
@@ -27479,7 +27483,6 @@
 	                            elem.selected = false;
 	                            elem.check = '';
 	                            elem.songsCheck = false;
-	                            elem.removed = false;
 	                            return elem;
 	                        });
 	                        that.setState({
@@ -27504,21 +27507,21 @@
 	                    _react2.default.createElement(
 	                        'div',
 	                        null,
-	                        _react2.default.createElement(_sliderArtists2.default, { artists: this.state.topSliderArtists, active: 4, populate: function populate(elem) {
-	                                return that.populateSelectedArtists(elem);
+	                        _react2.default.createElement(_sliderArtists2.default, { artists: this.state.topSliderArtists, active: 4,
+	                            populate: function populate(selected, numberOfItems) {
+	                                return that.populateSelectedArtists(selected, numberOfItems);
 	                            } }),
+	                        _react2.default.createElement(
+	                            _reactRouter.Link,
+	                            { className: this.state.createPlaylistButton, to: { pathname: 'filter', state: { artists: that.state.topSliderArtists } } },
+	                            'Create playlist'
+	                        ),
 	                        _react2.default.createElement(_selectedArtists2.default, { populate: function populate(elem) {
 	                                return that.populateSelectedArtists(elem);
-	                            }, selected: this.state.selectedArtists }),
-	                        _react2.default.createElement(
-	                            'button',
-	                            null,
-	                            _react2.default.createElement(
-	                                _reactRouter.Link,
-	                                { to: { pathname: 'filter', state: { artists: that.state.topSliderArtists } } },
-	                                'Create playlist'
-	                            )
-	                        )
+	                            }, getNumberOfItems: function getNumberOfItems(value) {
+	                                return that.setItemsNumber(value);
+	                            },
+	                            numberOfItems: that.state.numberOfItems, selected: this.state.selectedArtists })
 	                    )
 	                );
 	            } else {
@@ -27928,35 +27931,22 @@
 	    value: function render() {
 	      var _this2 = this;
 
-	      console.log('active is : ' + this.state.active);
 	      var that = this;
 	      var count = 0;
 	      var content = this.props.artists.filter(function (elem) {
-	        return elem.removed == false;
-	      }).map(function (elem) {
+	        return elem.selected == false;
+	      }).map(function (elem, index) {
 	        return _react2.default.createElement(_slideArtist2.default, { src: elem.images[0].url, artists: _this2.props.artists, name: elem.name, test: _this2.state.active,
 	          setActive: function setActive(value) {
 	            return that.setActiveSlider(value);
-	          }, check: elem.check, key: elem.images[0].url, populate: function populate(x) {
+	          }, index: index, check: elem.check, key: elem.images[0].url, populate: function populate(x) {
 	            return that.populateSelectedArtists(x);
 	          } });
 	      }); //USE SlideArtist here
 	      return _react2.default.createElement(
 	        'div',
-	        { className: 'container' },
-	        _react2.default.createElement(
-	          _reactCoverflow2.default,
-	          {
-
-	            height: 500,
-	            displayQuantityOfSide: 2,
-	            navigation: true,
-	            enableHeading: false,
-	            active: this.state.active
-
-	          },
-	          content
-	        )
+	        { className: 'container artists' },
+	        content
 	      );
 	    }
 	  }]);
@@ -27965,6 +27955,18 @@
 	}(_react2.default.Component);
 
 	exports.default = SliderArtists;
+
+	// <Coverflow
+
+	//             height={500}
+	//             displayQuantityOfSide={2}
+	//             navigation={false}
+	//             enableHeading={false}
+	//             active={this.state.active}
+
+	//             >
+	//             {content}
+	//           </Coverflow>
 
 /***/ },
 /* 248 */
@@ -28579,88 +28581,190 @@
 
 	        _this.state = {
 	            check: '', //this.props.checked,
-	            class: 'artistContainer'
+	            stroke: 'grey',
+	            strokeW: '2'
+
 	        };
 	        return _this;
 	    }
 
 	    _createClass(SlideArtist, [{
+	        key: 'mouseEnter',
+	        value: function mouseEnter(e) {
+	            // this.setState({
+	            //     stroke: 'badge active'
+	            // })
+	        }
+	    }, {
+	        key: 'mouseLeave',
+	        value: function mouseLeave(e) {
+	            //  this.setState({
+	            //     class: 'badge'
+	            // })
+	        }
+	    }, {
 	        key: 'handleClick',
 	        value: function handleClick(e) {
-	            var _this2 = this;
-
-	            if (e.target.parentElement.parentElement.attributes.style.nodeValue.indexOf('opacity: 1') > -1) {
-	                (function () {
-	                    //Only center element can be selected. Needs rework
-	                    _this2.setClass(true);
-
-	                    var that = _this2;
-	                    setTimeout(function () {
-	                        var active = that.findIndex(that.props.artists, that.props.name);
-
-	                        var ph = that.props.check;
-	                        if (ph == '') {
-	                            that.props.populate({
-	                                name: that.props.name,
-	                                selected: true,
-	                                removed: true
-	                            });
-	                        } else {
-	                            that.props.populate({
-	                                name: that.props.name,
-	                                selected: false,
-	                                removed: false
-	                            });
-	                        }
-	                        that.props.setActive(active);
-	                    }, 300);
-	                })();
+	            var ph = this.props.check;
+	            if (ph == '') {
+	                this.props.populate({
+	                    name: this.props.name,
+	                    selected: true
+	                });
+	            } else {
+	                this.props.populate({
+	                    name: this.props.name,
+	                    selected: false
+	                });
 	            }
 	        }
 	    }, {
-	        key: 'setClass',
-	        value: function setClass() {
-	            this.setState({
-	                class: 'artistContainer left'
-	            });
+	        key: 'setBadge',
+	        value: function setBadge(index) {
+	            index++;
+	            var badge = {
+	                svgH: '30em',
+	                svgW: '30em',
+	                patternX: '0em',
+	                patternY: '0em',
+	                patternH: '20em',
+	                patternW: '20em',
+	                imageX: '-5em',
+	                imageY: '-5em',
+	                imageH: '30em',
+	                imageW: '30em',
+	                circleX: '10em',
+	                circleY: '10em',
+	                circleR: '9em'
+	            };
+	            if (index == 1) {
+	                return badge;
+	            } else {
+	                for (var key in badge) {
+	                    badge[key] = (parseFloat(badge[key]) / (1.5 + index * 0.1)).toString() + 'em';
+	                }
+	                return badge;
+	            }
 	        }
 	    }, {
-	        key: 'findIndex',
-	        value: function findIndex(selection, value) {
-	            selection = selection.filter(function (elem) {
-	                return elem.removed == false;
-	            });
-	            for (var i = 0; i < selection.length; i++) {
-	                if (selection[i]['name'] == value) {
-	                    console.log('Selection length' + selection.length);
-	                    if (i == 0) {
-	                        i = 0;
-	                        return i;
-	                    } else if (i == selection.length - 1) {
-	                        i = selection.length - 3;
-	                        return i;
-	                    } else {
-	                        return i++;
-	                    }
+	        key: 'setStyle',
+	        value: function setStyle(index) {
+	            index++;
+	            console.log(this.props.artists.length);
+	            var current = this.props.name;
+	            var artists = this.props.artists;
+	            var mapLefts = [];
+	            var mapRights = [];
+	            for (var i = 0; i < artists.length; i++) {
+	                if (i % 2 > 0) {
+	                    mapLefts.push(i + 1);
+	                } else if (i % 2 == 0) {
+	                    mapRights.push(i + 1);
 	                }
 	            }
+	            var total = this.props.artists.length;
+	            var step = 2;
+	            var top = 0;
+	            var left = 30;
+	            var right = 50;
+	            var indexLeft = void 0;
+	            var indexRight = void 0;
+	            var coeficient = 1.4;
+	            if (index <= 10) {
+	                step = 3;
+	            } else if (index > 10 && index <= 15) {
+	                step = 2.8;
+	            } else if (index > 15 && index <= 20) {
+	                step = 2.7;
+	            }
+
+	            var style = {};
+	            //check for center element
+	            if (index == 1) {
+	                style.marginLeft = '35em';
+	                style.marginTop = '7.5em';
+	            }
+	            //all left
+	            else if (index % 2 == 0) {
+	                    indexLeft = mapLefts.indexOf(index);
+	                    indexLeft++;
+	                    if (indexLeft == 1) {
+	                        //first
+	                        style.marginLeft = parseInt(left - indexLeft * step * coeficient) + 'em';
+	                        style.marginTop = parseInt(top + step) + 'em';
+	                    } else if ((indexLeft % 4 == 0 || indexLeft % 7 == 0) && indexLeft != 8) {
+	                        style.marginLeft = parseInt(left - indexLeft * step * coeficient) + 'em';
+	                        style.marginTop = parseInt(top + step) + 'em';
+	                    } else if (indexLeft % 2 == 0 && indexLeft % 3 > 0) {
+	                        //even but not 3d
+
+	                        style.marginLeft = parseInt(left - indexLeft * step * coeficient) + 'em';
+	                        style.marginTop = parseInt(top + step + 10) + 'em';
+	                    } else if (indexLeft % 3 == 0) {
+	                        // 3d
+	                        style.marginLeft = parseInt(left - (indexLeft - 2) * step * coeficient) + 'em';
+	                        style.marginTop = parseInt(top + step + 20) + 'em';
+	                    } else {
+	                        //uneven
+	                        style.marginLeft = parseInt(left - indexLeft * step * coeficient) + 'em';
+	                        style.marginTop = parseInt(top + step + 10) + 'em';
+	                    }
+	                }
+	                //all right 
+	                else {
+	                        indexRight = mapRights.indexOf(index);
+	                        if (indexRight == 1) {
+	                            //first
+	                            style.marginLeft = parseInt(right + indexRight * step * coeficient) + 'em';
+	                            style.marginTop = parseInt(top + step) + 'em';
+	                        } else if ((indexRight % 4 == 0 || indexRight % 7 == 0) && indexRight != 8) {
+	                            style.marginLeft = parseInt(right + indexRight * step * coeficient) + 'em';
+	                            style.marginTop = parseInt(top + step) + 'em';
+	                        } else if (indexRight % 2 == 0 && indexRight % 3 > 0) {
+	                            //even but not 3d
+
+	                            style.marginLeft = parseInt(right + indexRight * step * coeficient) + 'em';
+	                            style.marginTop = parseInt(top + step + 10) + 'em';
+	                        } else if (indexRight % 3 == 0) {
+	                            // 3d
+	                            style.marginLeft = parseInt(right + (indexRight - 2) * step * coeficient) + 'em';
+	                            style.marginTop = parseInt(top + step + 20) + 'em';
+	                        } else {
+	                            //uneven
+	                            style.marginLeft = parseInt(right + indexRight * step * coeficient) + 'em';
+	                            style.marginTop = parseInt(top + step + 10) + 'em';
+	                        }
+	                    }
+	            return style;
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this3 = this;
+	            var _this2 = this;
 
+	            var badge = this.setBadge(this.props.index);
+	            var badgeStyle = this.setStyle(this.props.index);
+	            var patternURL = 'url(#' + this.props.src + ')';
 	            return _react2.default.createElement(
-	                'div',
-	                { className: this.state.class, onClick: function onClick(e) {
-	                        return _this3.handleClick(e);
-	                    } },
-	                _react2.default.createElement('img', { src: this.props.src, className: 'coverflow__cover__25-7e' }),
+	                'svg',
+	                { className: 'badge', height: badge.svgH, width: badge.svgH,
+	                    onMouseEnter: function onMouseEnter(e) {
+	                        return _this2.mouseEnter(e);
+	                    }, onMouseLeave: function onMouseLeave(e) {
+	                        return _this2.mouseLeave(e);
+	                    }, style: badgeStyle },
 	                _react2.default.createElement(
-	                    'div',
-	                    { className: 'coverflow__text__39hqd' },
-	                    this.props.name
-	                )
+	                    'defs',
+	                    null,
+	                    _react2.default.createElement(
+	                        'pattern',
+	                        { id: this.props.src, x: badge.patternX, y: badge.patternY, patternUnits: 'userSpaceOnUse', height: badge.patternH, width: badge.patternW },
+	                        _react2.default.createElement('image', { x: badge.imageX, y: badge.imageY, height: badge.imageH, width: badge.imageW, xlinkHref: this.props.src })
+	                    )
+	                ),
+	                _react2.default.createElement('circle', { cx: badge.circleX, cy: badge.circleY, r: badge.circleR, stroke: 'grey', strokeWidth: '2', fill: patternURL, onClick: function onClick(e) {
+	                        return _this2.handleClick(e);
+	                    } })
 	            );
 	        }
 	    }]);
@@ -28670,11 +28774,28 @@
 
 	exports.default = SlideArtist;
 
-	//SVG Badge
-	// <svg height="80" width="80" className="badge">
-	//                     <circle cx="25" cy="25" r="20" stroke="grey" strokeWidth="2" fill="#fff" onClick={(e)=>this.handleClick(e)}/>
+	//  <svg className="badge" height="200" width="200" className="badge" onClick={(e)=>this.handleClick(e)}>
+	//                     <defs>
+	//                         <pattern id="image" x="0" y="0" patternUnits="userSpaceOnUse" height="200" width="200">
+	//                         <image x="-50" y="-50" height="300" width="300" xlinkHref={this.props.src}></image>
+	//                         </pattern>
+	//                     </defs>
+	//                     <circle cx="100" cy="100" r="90" stroke="grey" strokeWidth="2" fill="url(#image)" onClick={(e)=>this.handleClick(e)}/>
 	//                     <text fill="green" fontSize="20" x="35%" y="44%" textAnchor="middle">{this.props.check}</text>
-	//                 </svg>
+	//                 </svg>  
+
+	// for(var i = 0; i < x.length; i++){
+	// if(i == 0){
+	// console.log('zero' , i)
+	// }else if( i%2 ==0 && i%3 >0){
+	// console.log('even but not 3rd' , i);
+	// }else if(i%3 == 0){
+	// console.log('3d ', i)
+	//     }
+	// else {
+	// console.log('uneven', i)
+	// }
+	// }
 
 /***/ },
 /* 251 */
@@ -28803,12 +28924,24 @@
 	        var _this = _possibleConstructorReturn(this, (SelectedArtists.__proto__ || Object.getPrototypeOf(SelectedArtists)).call(this, props));
 
 	        _this.state = {
-	            artists: ''
+	            classContainers: 'selectedContainer hidden',
+	            showingAll: false,
+	            numberOfShownItems: 2
 	        };
 	        return _this;
 	    }
 
 	    _createClass(SelectedArtists, [{
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps(nextProps) {
+	            var that = this;
+	            this.setState({
+	                classContainers: 'selectedContainer hidden',
+	                showingAll: false,
+	                numberOfShownItems: nextProps.numberOfItems > 2 ? nextProps.numberOfItems : 2
+	            });
+	        }
+	    }, {
 	        key: 'updateSelected',
 	        value: function updateSelected(e) {
 	            e.stopPropagation();
@@ -28820,41 +28953,127 @@
 	                    elem.removed = false;
 	                }
 	            });
-	            this.props.populate(phSelected);
+	            this.props.populate(phSelected, this.state.numberOfShownItems);
+	        }
+	    }, {
+	        key: 'showMore',
+	        value: function showMore() {
+	            var that = this;
+	            this.setState({
+	                classContainers: 'selectedContainer',
+	                showingAll: true,
+	                numberOfShownItems: that.props.selected.length
+	            });
+	        }
+	    }, {
+	        key: 'showLess',
+	        value: function showLess() {
+	            this.setState({
+	                classContainers: 'selectedContainer hidden',
+	                showingAll: false,
+	                numberOfShownItems: 2
+	            });
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
 	            var that = this;
-	            var content = this.props.selected.reverse().map(function (elem) {
-	                if (elem.selected == true) {
+	            var arrowMore = void 0;
+	            var arrowLess = void 0;
+	            var filtered = this.props.selected.reverse().filter(function (elem) {
+	                return elem.selected == true;
+	            });
+	            var content = this.props.selected.map(function (elem, index) {
+
+	                if (elem.selected == true && index < that.state.numberOfShownItems) {
 	                    return _react2.default.createElement(
-	                        'li',
-	                        { className: 'selectedContainer fadeInAnimation' },
-	                        _react2.default.createElement('img', { className: 'selectedArtistsImage', src: elem.images[0].url }),
+	                        'div',
+	                        { className: 'selectedContainer' },
 	                        _react2.default.createElement(
-	                            'span',
+	                            'p',
 	                            { className: 'left' },
 	                            elem.name
 	                        ),
 	                        _react2.default.createElement(
 	                            'button',
-	                            { value: elem.name, className: 'buttonRemove left' },
+	                            { value: elem.name, className: 'buttonRemove' },
 	                            _react2.default.createElement('i', { onClick: function onClick(e) {
 	                                    return that.updateSelected(e);
-	                                }, className: 'fa fa-times fa-1x' })
+	                                }, className: 'fa fa-times fa-2x' })
+	                        )
+	                    );
+	                } else if (elem.selected == true && index == that.state.numberOfShownItems) {
+	                    if (that.state.showingAll == false) {
+	                        arrowMore = _react2.default.createElement(
+	                            'div',
+	                            null,
+	                            _react2.default.createElement(
+	                                'button',
+	                                { className: 'showHideItems' },
+	                                _react2.default.createElement('i', { onClick: function onClick() {
+	                                        return that.showMore();
+	                                    }, className: 'fa fa-sort-desc fa-2x' })
+	                            )
+	                        );
+	                    }
+	                    return _react2.default.createElement(
+	                        'div',
+	                        null,
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: that.state.classContainers },
+	                            _react2.default.createElement(
+	                                'p',
+	                                { className: 'left' },
+	                                elem.name
+	                            ),
+	                            _react2.default.createElement(
+	                                'button',
+	                                { value: elem.name, className: 'buttonRemove' },
+	                                _react2.default.createElement('i', { onClick: function onClick(e) {
+	                                        return that.updateSelected(e);
+	                                    }, className: 'fa fa-times fa-2x' })
+	                            )
+	                        ),
+	                        arrowMore
+	                    );
+	                } else {
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: that.state.classContainers },
+	                        _react2.default.createElement(
+	                            'p',
+	                            { className: 'left' },
+	                            elem.name
+	                        ),
+	                        _react2.default.createElement(
+	                            'button',
+	                            { value: elem.name, className: 'buttonRemove' },
+	                            _react2.default.createElement('i', { onClick: function onClick(e) {
+	                                    return that.updateSelected(e);
+	                                }, className: 'fa fa-times fa-2x' })
 	                        )
 	                    );
 	                }
 	            });
+	            if (that.state.showingAll == true) {
+	                arrowLess = _react2.default.createElement(
+	                    'div',
+	                    null,
+	                    _react2.default.createElement(
+	                        'button',
+	                        { className: 'showHideItems' },
+	                        _react2.default.createElement('i', { onClick: function onClick() {
+	                                return that.showLess();
+	                            }, className: 'fa fa-sort-asc fa-2x' })
+	                    )
+	                );
+	            }
 	            return _react2.default.createElement(
 	                'div',
-	                { className: 'container' },
-	                _react2.default.createElement(
-	                    'ul',
-	                    null,
-	                    content
-	                )
+	                { className: 'container selected' },
+	                content,
+	                arrowLess
 	            );
 	        }
 	    }]);
@@ -28868,7 +29087,7 @@
 /* 254 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -28898,29 +29117,15 @@
 	    }
 
 	    _createClass(Banner, [{
-	        key: "render",
+	        key: 'render',
 	        value: function render() {
-	            return _react2.default.createElement(
-	                "div",
-	                { className: "bannerContainer" },
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "skewedBanner" },
-	                    "Artists",
-	                    _react2.default.createElement("i", { className: "fa fa-chevron-right fa-3x", "aria-hidden": "true" })
-	                ),
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "skewedBanner" },
-	                    "Filter",
-	                    _react2.default.createElement("i", { className: "fa fa-chevron-right fa-3x", "aria-hidden": "true" })
-	                ),
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "skewedBanner" },
-	                    "Create your playlist"
-	                )
-	            );
+	            return _react2.default.createElement('div', null)
+	            // <div className="bannerContainer">
+	            //     <div className="skewedBanner">Artists<i className="fa fa-chevron-right fa-3x" aria-hidden="true"></i></div>
+	            //     <div className="skewedBanner">Filter<i className="fa fa-chevron-right fa-3x" aria-hidden="true"></i></div>
+	            //     <div className="skewedBanner">Create your playlist</div>
+	            // </div>
+	            ;
 	        }
 	    }]);
 
@@ -38537,7 +38742,7 @@
 
 
 	// module
-	exports.push([module.id, ".filters {\n  list-style-type: none !important; }\n\nul.filters {\n  padding-top: 5%; }\n\n.input {\n  margin: auto; }\n\n.form {\n  margin: auto;\n  display: block;\n  text-align: center; }\n\nul {\n  padding: 0; }\n\n.filterContainer {\n  text-align: center; }\n\nbutton {\n  margin: auto;\n  display: block; }\n\n@keyframes moveLeft {\n  from {\n    opacity: 1; }\n  to {\n    opacity: 0; } }\n\n.coverflow__cover__25-7e {\n  box-shadow: none !important;\n  width: 13.9rem;\n  height: 10rem; }\n\n@keyframes fadeIn {\n  from {\n    opacity: 0; }\n  to {\n    opacity: 1; } }\n\n.coverflow__stage__14oqC {\n  pointer-events: all !important; }\n\n.fadeInAnimation {\n  animation: 0.3 fadeIn; }\n\n.selectedContainer {\n  margin-bottom: 4em;\n  width: 100%;\n  float: left; }\n\n.selectedArtistsImage {\n  float: left;\n  width: 5em;\n  height: 4em; }\n\n.artistContainer.left {\n  animation: 0.5s moveLeft forwards; }\n\n.slider {\n  margin: 0 auto;\n  padding: 40px;\n  width: 80%;\n  color: #333;\n  background: #419be0; }\n\n* {\n  box-shadow: none !important; }\n\n.coverflow__container__1P-xE {\n  background: #84bd00 !important; }\n\nsvg text {\n  font-family: FontAwesome; }\n\n.badge {\n  top: 5em;\n  position: relative;\n  left: 11em; }\n\n.selectedArtists {\n  background-size: contain;\n  width: 5em;\n  height: 6em;\n  background-repeat: no-repeat;\n  opacity: 0.9; }\n\n.buttonRemove {\n  background: none;\n  border: none;\n  color: red; }\n\n.left {\n  float: left;\n  line-height: 1em; }\n\n.InputRange-slider {\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: #01a982;\n  border: 1px solid #01a982;\n  border-radius: 100%;\n  cursor: pointer;\n  display: block;\n  height: 1rem;\n  margin-left: -0.5rem;\n  margin-top: -0.65rem;\n  outline: none;\n  position: absolute;\n  top: 50%;\n  transition: -webkit-transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  width: 1rem; }\n\n.InputRange-slider:active {\n  -webkit-transform: scale(1.3);\n  transform: scale(1.3); }\n\n.InputRange-slider:focus {\n  box-shadow: 0 0 0 5px rgba(63, 81, 181, 0.2); }\n\n.InputRange.is-disabled .InputRange-slider {\n  background: #cccccc;\n  border: 1px solid #cccccc;\n  box-shadow: none;\n  -webkit-transform: none;\n  transform: none; }\n\n.InputRange-sliderContainer {\n  transition: left 0.3s ease-out; }\n\n.InputRange-label {\n  color: #aaaaaa;\n  font-family: \"Helvetica Neue\", san-serif;\n  font-size: 0.8rem;\n  white-space: nowrap; }\n\n.InputRange-label--min,\n.InputRange-label--max {\n  bottom: -1.4rem;\n  position: absolute; }\n\n.InputRange-label--min {\n  left: 0; }\n\n.InputRange-label--max {\n  right: 0; }\n\n.InputRange-label--value {\n  position: absolute;\n  top: -1.8rem; }\n\n.InputRange-labelContainer {\n  left: -50%;\n  position: relative; }\n\n.InputRange-label--max .InputRange-labelContainer {\n  left: 50%; }\n\n.InputRange-track {\n  background: #eeeeee;\n  border-radius: 0.3rem;\n  cursor: pointer;\n  display: block;\n  height: 0.3rem;\n  position: relative;\n  transition: left 0.3s ease-out, width 0.3s ease-out; }\n\n.InputRange.is-disabled .InputRange-track {\n  background: #eeeeee; }\n\n.InputRange-track--container {\n  left: 0;\n  margin-top: -0.15rem;\n  position: absolute;\n  right: 0;\n  top: 50%; }\n\n.InputRange-track--active {\n  background: #01a982; }\n\n.InputRange {\n  height: 1rem;\n  position: relative;\n  width: 100%; }\n\n.skewedBanner {\n  float: left;\n  color: #84bd00;\n  background-color: black;\n  transform: skewX(-10deg);\n  -webkit-transform: skew(-10deg);\n  -moz-transform: skew(-10deg);\n  text-align: center;\n  line-height: 2.5em;\n  width: 33.33%;\n  height: 3rem; }\n  .skewedBanner.inverted {\n    color: black;\n    background-color: #84bd00; }\n\n.bannerContainer {\n  width: 100%;\n  background: black;\n  height: 3rem; }\n\n.fa-chevron-right {\n  float: right !important; }\n\nul {\n  list-style-type: none; }\n", ""]);
+	exports.push([module.id, ".badge {\n  position: absolute !important;\n  cursor: pointer; }\n  .badge.active {\n    box-shadow: 0px 0px 100px 0px #84bd00 !important; }\n\n.container.artists {\n  height: 30em !important;\n  width: 70em !important; }\n\n.filters {\n  list-style-type: none !important; }\n\nul.filters {\n  padding-top: 5%; }\n\n.input {\n  margin: auto; }\n\n.form {\n  margin: auto;\n  display: block;\n  text-align: center; }\n\nul {\n  padding: 0; }\n\n.filterContainer {\n  text-align: center; }\n\nbutton {\n  margin: auto;\n  display: block; }\n\n@keyframes moveLeft {\n  from {\n    opacity: 1; }\n  to {\n    opacity: 0; } }\n\n.coverflow__cover__25-7e {\n  box-shadow: 0px 0px 100px 0px #84bd00 !important;\n  width: 13.9rem;\n  height: 10rem; }\n\n@keyframes fadeIn {\n  from {\n    opacity: 0; }\n  to {\n    opacity: 1; } }\n\n.coverflow__stage__14oqC {\n  pointer-events: all !important; }\n\n.fadeInAnimation {\n  animation: 0.3 fadeIn; }\n\n.selectedContainer {\n  width: 30em;\n  float: left;\n  color: white;\n  background: black;\n  border: 1px solid #f47321;\n  height: 2em; }\n  .selectedContainer.hidden {\n    display: none; }\n\n.selectedArtistsImage {\n  float: left;\n  width: 5em;\n  height: 4em; }\n\n.slider {\n  margin: 0 auto;\n  padding: 40px;\n  width: 80%;\n  color: #333;\n  background: #419be0; }\n\n.selected {\n  width: 30em;\n  margin: auto; }\n\n* {\n  box-shadow: none !important; }\n\n.artistContainer {\n  display: block; }\n\nsvg text {\n  font-family: FontAwesome; }\n\n.selectedArtists {\n  background-size: contain;\n  width: 5em;\n  height: 6em;\n  background-repeat: no-repeat;\n  opacity: 0.9; }\n\n.buttonRemove {\n  background: none;\n  border: none;\n  color: red;\n  margin-left: 28em;\n  margin-top: -0.2em;\n  cursor: pointer; }\n  .buttonRemove:focus {\n    outline: 0; }\n\n.left {\n  float: left;\n  line-height: 1.6em;\n  margin-left: 0.4em;\n  font-size: 1.2em; }\n\n.InputRange-slider {\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: #01a982;\n  border: 1px solid #01a982;\n  border-radius: 100%;\n  cursor: pointer;\n  display: block;\n  height: 1rem;\n  margin-left: -0.5rem;\n  margin-top: -0.65rem;\n  outline: none;\n  position: absolute;\n  top: 50%;\n  transition: -webkit-transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  width: 1rem; }\n\n.InputRange-slider:active {\n  -webkit-transform: scale(1.3);\n  transform: scale(1.3); }\n\n.InputRange-slider:focus {\n  box-shadow: 0 0 0 5px rgba(63, 81, 181, 0.2); }\n\n.InputRange.is-disabled .InputRange-slider {\n  background: #cccccc;\n  border: 1px solid #cccccc;\n  box-shadow: none;\n  -webkit-transform: none;\n  transform: none; }\n\n.InputRange-sliderContainer {\n  transition: left 0.3s ease-out; }\n\n.InputRange-label {\n  color: #aaaaaa;\n  font-family: \"Helvetica Neue\", san-serif;\n  font-size: 0.8rem;\n  white-space: nowrap; }\n\n.InputRange-label--min,\n.InputRange-label--max {\n  bottom: -1.4rem;\n  position: absolute; }\n\n.InputRange-label--min {\n  left: 0; }\n\n.InputRange-label--max {\n  right: 0; }\n\n.InputRange-label--value {\n  position: absolute;\n  top: -1.8rem; }\n\n.InputRange-labelContainer {\n  left: -50%;\n  position: relative; }\n\n.InputRange-label--max .InputRange-labelContainer {\n  left: 50%; }\n\n.InputRange-track {\n  background: #eeeeee;\n  border-radius: 0.3rem;\n  cursor: pointer;\n  display: block;\n  height: 0.3rem;\n  position: relative;\n  transition: left 0.3s ease-out, width 0.3s ease-out; }\n\n.InputRange.is-disabled .InputRange-track {\n  background: #eeeeee; }\n\n.InputRange-track--container {\n  left: 0;\n  margin-top: -0.15rem;\n  position: absolute;\n  right: 0;\n  top: 50%; }\n\n.InputRange-track--active {\n  background: #01a982; }\n\n.InputRange {\n  height: 1rem;\n  position: relative;\n  width: 100%; }\n\n.skewedBanner {\n  float: left;\n  color: #84bd00;\n  background-color: black;\n  transform: skewX(-10deg);\n  -webkit-transform: skew(-10deg);\n  -moz-transform: skew(-10deg);\n  text-align: center;\n  line-height: 2.5em;\n  width: 33.33%;\n  height: 3rem; }\n  .skewedBanner.inverted {\n    color: black;\n    background-color: #84bd00; }\n\n.bannerContainer {\n  width: 100%;\n  background: black;\n  height: 3rem; }\n\n.fa-chevron-right {\n  float: right !important; }\n\nbody {\n  background: black; }\n\nul {\n  list-style-type: none; }\n\n.login {\n  background: white !important;\n  width: 100%;\n  height: 100%; }\n\n.playlistButton {\n  background: #84bd00;\n  border-radius: 0.3em;\n  width: 15em;\n  height: 5em;\n  box-shadow: 0px 0px 100px 0px #84bd00 !important;\n  border: 1px solid #84bd00;\n  color: black !important; }\n  .playlistButton.hide {\n    display: none; }\n", ""]);
 
 	// exports
 

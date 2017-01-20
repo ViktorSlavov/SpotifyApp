@@ -30,26 +30,15 @@ class SliderArtists extends React.Component{
      
     }
     render() {
-      console.log(`active is : ${this.state.active}`);
       let that = this;
       let count = 0;
       let content  = this.props.artists.filter( elem => 
-      elem.removed == false).map(elem=> 
+      elem.selected == false).map((elem,index)=> 
       <SlideArtist src={elem.images[0].url} artists={this.props.artists} name={elem.name} test={this.state.active}
-      setActive={(value)=>that.setActiveSlider(value)}  check={elem.check} key={elem.images[0].url} populate={(x)=>that.populateSelectedArtists(x)}/>) //USE SlideArtist here
+      setActive={(value)=>that.setActiveSlider(value)} index={index} check={elem.check} key={elem.images[0].url} populate={(x)=>that.populateSelectedArtists(x)}/>) //USE SlideArtist here
       return (
-        <div className="container">
-          <Coverflow
-         
-            height={500}
-            displayQuantityOfSide={2}
-            navigation={true}
-            enableHeading={false}
-            active={this.state.active}
-            
-            >
-            {content}
-          </Coverflow>
+        <div className="container artists">
+          {content}
         </div>
       );
   }
@@ -57,3 +46,14 @@ class SliderArtists extends React.Component{
 
 export default SliderArtists;
 
+// <Coverflow
+         
+//             height={500}
+//             displayQuantityOfSide={2}
+//             navigation={false}
+//             enableHeading={false}
+//             active={this.state.active}
+            
+//             >
+//             {content}
+//           </Coverflow>

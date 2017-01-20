@@ -7,11 +7,12 @@ class Banner extends React.Component{
 
     render(){
         return (
-            <div className="bannerContainer">
-                <div className="skewedBanner">Artists<i className="fa fa-chevron-right fa-3x" aria-hidden="true"></i></div>
-                <div className="skewedBanner">Filter<i className="fa fa-chevron-right fa-3x" aria-hidden="true"></i></div>
-                <div className="skewedBanner">Create your playlist</div>
-            </div>
+            <div></div>
+            // <div className="bannerContainer">
+            //     <div className="skewedBanner">Artists<i className="fa fa-chevron-right fa-3x" aria-hidden="true"></i></div>
+            //     <div className="skewedBanner">Filter<i className="fa fa-chevron-right fa-3x" aria-hidden="true"></i></div>
+            //     <div className="skewedBanner">Create your playlist</div>
+            // </div>
         )
         
     }
