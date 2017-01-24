@@ -19,6 +19,29 @@ let SpotifyApi = {
                 req.send();
          })
     },
+    getRelatedArtists : function (token, artistId){
+        return new Promise(function(resolve,reject){
+            let req = new XMLHttpRequest();
+            let auth = `Bearer ${token}`;
+            let id = `https://api.spotify.com/v1/artists/${artistId}/related-artists`
+            req.onreadystatechange = function(data) {
+                if (this.readyState == 4 && this.status == 200) {
+                    let results = JSON.parse(data);
+                    resolve(results);
+                    // resolve(JSON.parse(data.currentTarget.response).audio_features.map(function(elem, index){
+                    //     elem.artist = artists.artist[index]
+                    //     elem.name = artists.names[names]
+                    //     return elem
+                    // }));
+                } else if (this.readyState == 4 && this.status != 200){
+                    reject('Error');
+                }
+            };
+            req.open("GET", id,true);
+            req.setRequestHeader('Authorization',auth,true)
+            req.send();
+        })
+    },
     createPlaylist : function(userId, token, playlistName, songs, name){
         let that = this;
             let params = JSON.stringify({

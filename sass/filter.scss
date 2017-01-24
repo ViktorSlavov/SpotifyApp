@@ -1,4 +1,25 @@
 $filter-color: #01a982;
+$spotify-green: #84bd00;
+$orange : #f47321;
+
+
+//badges SCSS
+
+
+.badge {
+    position:absolute!important;
+    cursor: pointer;
+    &.active {
+      box-shadow: 0px 0px 100px 0px $spotify-green!important;
+    }
+}
+
+//cotainer artists 
+
+.container.artists{
+  height:30em!important;
+  width:70em!important;
+}
 
 .filters {
 
@@ -37,7 +58,7 @@ button {
 
 }
 .coverflow__cover__25-7e {
-  box-shadow: none!important;
+  box-shadow: 0px 0px 100px 0px $spotify-green!important;
   width: 13.9rem;
   height: 10rem;
   
@@ -57,9 +78,15 @@ button {
 }
 
 .selectedContainer {
-  margin-bottom:4em;
-  width:100%;
+  width:30em;
   float:left;
+  color:white;
+  background:black;
+  border: 1px solid $orange;
+  height: 2em;
+  &.hidden {
+    display: none;
+  }
 }
 
 .selectedArtistsImage {
@@ -68,9 +95,6 @@ button {
   height: 4em;
 }
 
-.artistContainer.left{
-    animation: 0.5s moveLeft forwards;
-}
 
 .slider {
   margin: 0 auto;
@@ -80,16 +104,21 @@ button {
   background: #419be0;
 }
 
+.selected {
+  width:30em;
+  margin:auto;
+}
+
 
 * {
    box-shadow: none!important;
 }
 .artistContainer{
-  //margin-top:-4em;
+  display: block;
 }
 
 .coverflow__container__1P-xE{
-  background:#84bd00!important;
+ // background:#84bd00!important;
 }
 
 svg text {
@@ -97,11 +126,6 @@ svg text {
   
 }
 
-.badge {
-    top: 5em;
-    position: relative;
-    left: 11em;
-}
 
 .selectedArtists {
   background-size: contain;
@@ -115,11 +139,18 @@ svg text {
   background:none;
   border:none;
   color:red;
+  margin-left: 28em;
+  margin-top: -0.2em;
+  cursor: pointer;
+  &:focus {outline:0;}
+  
 }
 
 .left {
     float: left;
-    line-height: 1em;
+    line-height: 1.6em;
+    margin-left: 0.4em;
+    font-size: 1.2em;
 }
 
 .coverflow__container__1P-xE {
