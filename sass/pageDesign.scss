@@ -1,6 +1,26 @@
 $spotify-green: #84bd00;
 $orange : #f47321;
 
+@media (min-width: 768px) {
+    #app {
+        margin:0;
+        width: 80em;
+    }
+    .container.artists{
+        margin-top: 5em;
+    }
+}
+
+@media (min-width: 1200px){
+    #app {
+        margin:auto;
+        width:100em;
+    }
+    .container.artists{
+        margin-top: 0em;
+    }
+}
+
 .skewedBanner {
     float:left;
     color: $spotify-green;
@@ -20,12 +40,9 @@ $orange : #f47321;
 }
 
 .bannerContainer {
-    //   transform: skew(10deg);
-    // -webkit-transform: skew(10deg);
-    // -moz-transform: skew(10deg);
     width:100%;
     background:black;
-    height:3rem;
+    height:4rem;
 }
 
 .fa-chevron-right {
@@ -33,7 +50,7 @@ $orange : #f47321;
 }
 
 body {
-    background:black;
+    background: white;
 }
 
 ul {
@@ -59,3 +76,4 @@ ul {
         display: none;
     }
 }
+

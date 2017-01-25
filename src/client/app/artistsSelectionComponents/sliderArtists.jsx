@@ -16,29 +16,42 @@ class SliderArtists extends React.Component{
         }
        // this.populateSelectedArtists = this.populateSelectedArtists.bind(this);
     }
-    populateSelectedArtists(value){
-       this.props.populate(value); 
+
+     clickAdd(){
+        this.populateSelectedArtists(this.props.artists[0],'Add')
+    }
+
+    clickRelated(){
+        this.populateSelectedArtists(this.props.artists[0].id,'Related');
+    }
+
+    clickBack(){
+        this.populateSelectedArtists(0,'Back');
+    }
+
+    populateSelectedArtists(value,action){
+       this.props.populate(value,action); 
        
     }
 
-    
-    setActiveSlider(value){
-      console.log(value);
-      this.setState({
-        active:value
-      })
-     
-    }
     render() {
       let that = this;
       let count = 0;
-      let content  = this.props.artists.filter( elem => 
-      elem.selected == false).map((elem,index)=> 
-      <SlideArtist src={elem.images[0].url} artists={this.props.artists} name={elem.name} test={this.state.active}
-      setActive={(value)=>that.setActiveSlider(value)} index={index} check={elem.check} key={elem.images[0].url} populate={(x)=>that.populateSelectedArtists(x)}/>) //USE SlideArtist here
+      let content  = this.props.artists.map((elem,index)=> 
+      <SlideArtist src={elem.images[0].url} artists={this.props.artists} name={elem.name} test={this.state.active} id={elem.id} savedStates={this.props.savedStates}
+      setActive={(value)=>that.setActiveSlider(value)} index={index} check={elem.check} key={elem.images[0].url} populate={(value,action)=>that.populateSelectedArtists(value,action)}/>) //USE SlideArtist here
       return (
-        <div className="container artists">
-          {content}
+        <div>
+          <div className="container artists">
+            {content}
+            
+          </div>
+          <div className="selectedArtist">
+            <p>{this.props.artists[0].name}</p>
+            <i className="fa fa-plus fa-2x" value="Add" aria-hidden="true" alt="Add artists" onClick={()=>this.clickAdd()}></i>  
+            <i className="fa fa-random fa-2x" value="Related" aria-hidden="true" alt="Get related artists" onClick={(e)=>this.clickRelated()}></i> 
+            <i className="fa fa-undo fa-2x" value="Back" aria-hidden="true" alt="Go back" onClick={()=>this.clickBack()}></i>  
+          </div>
         </div>
       );
   }

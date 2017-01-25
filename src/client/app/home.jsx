@@ -13,32 +13,56 @@ class Home extends React.Component {
             token: localStorage.getItem('token'),
             artists: '',
             authenticated: '',
+            savedStates : [],
             topSliderArtists: [],
             selectedArtists: [], //need this one to maintain the correct order of choices;
             songs: [],
+            relatedArtists: [],
             numberOfItems: 2,
-            createPlaylistButton: 'playlistButton hide'
+            createPlaylistButton: 'playlistButton'
         }
         
     }
-   populateSelectedArtists(value,numberOfItems){
-       let phSelected = this.state.topSliderArtists;
-       let orderOfSelection = this.state.selectedArtists;
-       phSelected.map(function(elem){
-           if(elem.name == value.name){
-               elem.selected = !elem.selected;
-               elem.check = (elem.check == "\uf00c" ? '':'\uf00c');
-               orderOfSelection.push(elem);
-           }
-           return elem;
-       })
-       orderOfSelection =  orderOfSelection.filter(elem => elem.selected == true);
-       this.setState({
-           topSliderArtists: phSelected,
-           selectedArtists: orderOfSelection,
-           createPlaylistButton: orderOfSelection.length > 0 ? 'playlistButton':'playlistButton hide',
-           numberOfItems: numberOfItems > 2 ? numberOfItems: 2
-       })
+   populateSelectedArtists(value,action){
+       let that = this;
+       let phSelected;
+       if(action == 'Reorder'){
+           phSelected = this.state.topSliderArtists;
+           let first = phSelected[0];
+           phSelected[0] = phSelected[value];
+           phSelected[value] = first;
+                      console.log(phSelected);
+
+           this.setState({
+               topSliderArtists: phSelected
+           })
+       }
+       else if(action == 'Add'){
+           let phSelected = this.state.selectedArtists;
+           phSelected.push(value);
+           this.setState({
+               selectedArtists: phSelected,
+           })
+       }
+       else if (action == "Related"){
+
+           SpotifyApi.getRelatedArtists(that.state.token,value).then(function(results){
+                    let ph = that.state.savedStates;
+                    let newArtists = [that.state.topSliderArtists[0]].concat(results.artists);
+                    ph.push(that.state.topSliderArtists);
+                    that.setState({
+                        relatedArtists: [that.state.topSliderArtists[0]].concat(results.artists),    //set the clicked to be the first and then add related artists around it
+                        savedStates: ph, // push the previous artist into saved states so we can get to them with back button
+                        topSliderArtists: [that.state.topSliderArtists[0]].concat(results.artists),  // set the rendered artists to related   
+                    })
+            })
+           
+       }
+       else if(action == 'Back'){
+           this.setState({
+               topSliderArtists: this.state.savedStates.pop(),
+           })
+       }
        
    }
 
@@ -76,8 +100,11 @@ class Home extends React.Component {
                 that.setState({
                     artists: topArtists,
                     topSliderArtists: results,
+                    savedStates: [results],
                 })
+                
             })
+            
         }
     
        
@@ -92,12 +119,12 @@ class Home extends React.Component {
                 <div>
                     <Banner/>
                     <div>
-                        <SliderArtists artists={this.state.topSliderArtists} active={4}  
-                        populate={(selected,numberOfItems)=>that.populateSelectedArtists(selected,numberOfItems)}/>
+                        <SliderArtists artists={this.state.topSliderArtists} active={4} savedStates={this.state.savedStates.length}
+                        populate={(selected,action)=>that.populateSelectedArtists(selected,action)}/>
                         
                         <Link className={this.state.createPlaylistButton} to={{ pathname: 'filter', state: { artists: that.state.topSliderArtists } }} >Create playlist</Link>
-                        <SelectedArtists populate={(elem)=>that.populateSelectedArtists(elem)} getNumberOfItems={(value)=>that.setItemsNumber(value)} 
-                        numberOfItems={that.state.numberOfItems} selected={this.state.selectedArtists}/>
+                        <SelectedArtists populate={(elem)=>that.populateSelectedArtists(elem)}  
+                         selected={this.state.selectedArtists}/>
                         
                     </div>
                     

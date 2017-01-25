@@ -7,42 +7,22 @@ class SlideArtist extends React.Component {
             check: '',//this.props.checked,
             stroke: 'grey',
             strokeW: '2',
-
+            buttonsRight: 'buttons right',
+            buttonsLeft: 'buttons left',
+            buttonsCenter: 'buttons center',
+            label: 'badge label '
         }
     }
 
-    mouseEnter(e){
-        // this.setState({
-        //     stroke: 'badge active'
-        // })
-    }
 
-    mouseLeave(e){
-        //  this.setState({
-        //     class: 'badge'
-        // })
+    handleClick(e){
+        if(this.props.index == 0){        // Show Add/Related/Back
+          
+        }else {  //swap places
+            this.props.populate(this.props.index,'Reorder');
+        }
     }
-
-    handleClick(e){        
-            let ph = this.props.check;
-            if(ph == ''){
-                this.props.populate(
-                    {
-                        name: this.props.name,
-                        selected: true,
-                    }
-                )
-            } else {
-                this.props.populate(
-                    {
-                        name: this.props.name,
-                        selected: false,
-                    }
-                )
-            }
-            
-        
-    }
+   
 
     setBadge(index){
         index++;
@@ -72,10 +52,28 @@ class SlideArtist extends React.Component {
         }
         
     }
+//   <svg  className={this.state.label} x={label.x} style={labelStyle}>
+//                     <rect x={label.x} y={label.y} rx={label.rx} ry={label.ry} width={label.width} height={label.height} fill="#B90000"/>
+//                     <text fill="white" fontSize={label.fontSize} x={label.textX} y={label.textY} textAnchor="middle">{this.props.name}</text>
+//                 </svg>
+    setLabel(name){
+        let nameL = name.length;
+        let label = {
+            x: 20-nameL,
+            y: 2,
+            rx: 20,
+            ry: 40,
+            width: 50+nameL*5,
+            height: 20,
+            fontSize: 14,
+            textX: (45+nameL*5)/2,
+            textY: 15,
+        }
+        return label;
+    }
 
     setStyle(index){
         index++;
-        console.log(this.props.artists.length)
         let current = this.props.name;
         let artists = this.props.artists;
         let mapLefts = [];
@@ -99,7 +97,7 @@ class SlideArtist extends React.Component {
             step = 3;
         }else if (index > 10 && index <= 15){
             step = 2.8
-        }else if (index > 15 && index<=20){
+        }else if (index > 15 && index<=22){
             step = 2.7;
         }
 
@@ -108,8 +106,15 @@ class SlideArtist extends React.Component {
         //check for center element
         if(index == 1){
             style.marginLeft ='35em';
-            style.marginTop = '7.5em';
-        } 
+            style.marginTop = '15em';
+        } else if (index == 20){
+            style.marginLeft = parseInt(left-5*step*coeficient)+'em';
+             style.marginTop = parseInt(top+step+30)+'em';
+        }
+         else if (index == 21){
+            style.marginLeft = parseInt(right+5*step*coeficient)+'em';
+             style.marginTop = parseInt(top+step+30)+'em';
+        }
         //all left
         else if(index%2 == 0){
             indexLeft = mapLefts.indexOf(index);
@@ -124,15 +129,15 @@ class SlideArtist extends React.Component {
             else if(indexLeft %2 == 0 && indexLeft%3 > 0){ //even but not 3d
                
                 style.marginLeft = parseInt(left-indexLeft*step*coeficient)+'em';
-                style.marginTop = parseInt(top+step+10)+'em';
+                style.marginTop = parseInt(top+step+12)+'em';
             }
             else if(indexLeft %3 == 0 ) { // 3d
                 style.marginLeft = parseInt(left-(indexLeft-2)*step*coeficient)+'em';
-                style.marginTop = parseInt(top+step+20)+'em';
+                style.marginTop = parseInt(top+step+23)+'em';
             }
             else { //uneven
                 style.marginLeft = parseInt(left-indexLeft*step*coeficient)+'em';
-                style.marginTop = parseInt(top+step+10)+'em';
+                style.marginTop = parseInt(top+step+12)+'em';
             }
                
         }
@@ -149,15 +154,15 @@ class SlideArtist extends React.Component {
             else if(indexRight %2 == 0 && indexRight%3 > 0){ //even but not 3d
                
                 style.marginLeft = parseInt(right+indexRight*step*coeficient)+'em';
-                style.marginTop = parseInt(top+step+10)+'em';
+                style.marginTop = parseInt(top+step+12)+'em';
             }
             else if(indexRight %3 == 0 ) { // 3d
                 style.marginLeft = parseInt(right+(indexRight-2)*step*coeficient)+'em';
-                style.marginTop = parseInt(top+step+20)+'em';
+                style.marginTop = parseInt(top+step+23)+'em';
             }
             else { //uneven
                 style.marginLeft = parseInt(right+indexRight*step*coeficient)+'em';
-                style.marginTop = parseInt(top+step+10)+'em';
+                style.marginTop = parseInt(top+step+12)+'em';
             }
                
 
@@ -165,13 +170,26 @@ class SlideArtist extends React.Component {
         return style;
     }
 
+    
+
     render() { 
+        let centerButton = <div></div>;
         let badge = this.setBadge(this.props.index);
+         let label = this.setLabel(this.props.name);
         let badgeStyle = this.setStyle(this.props.index);
+        let labelStyle = badgeStyle;
         let patternURL = `url(#${this.props.src})`;
+        if(this.props.savedStates > 0){
+            centerButton = (
+                <svg className={this.state.buttonsCenter} width="100" height="40" onClick={()=>this.clickBack()}>
+                    <rect x="0" y="0" rx="20" ry="40" width="80" height="30" fill="white"/>
+                    <text fill="green" fontSize="20" x="20%" y="50%" textAnchor="middle">Back</text>
+                 </svg>
+            )
+        }
         return (
-                <svg className="badge" height={badge.svgH} width={badge.svgH} 
-                 onMouseEnter={(e)=>this.mouseEnter(e)} onMouseLeave={(e)=>this.mouseLeave(e)} style={badgeStyle}>
+            <div>
+                <svg className="badge" height={badge.svgH} width={badge.svgH} style={badgeStyle}>
                     <defs>
                         <pattern id={this.props.src} x={badge.patternX} y={badge.patternY} patternUnits="userSpaceOnUse" height={badge.patternH} width={badge.patternW}>
                         <image x={badge.imageX} y={badge.imageY} height={badge.imageH} width={badge.imageW} xlinkHref={this.props.src}></image>
@@ -179,12 +197,13 @@ class SlideArtist extends React.Component {
                     </defs>
                     <circle cx={badge.circleX} cy={badge.circleY} r={badge.circleR} stroke="grey" strokeWidth="2" fill={patternURL} onClick={(e)=>this.handleClick(e)}/>
                 </svg>  
+            </div>
         )
     }
 }
 
 
-export default SlideArtist; 
+export default SlideArtist;
 
 //  <svg className="badge" height="200" width="200" className="badge" onClick={(e)=>this.handleClick(e)}>
 //                     <defs>
@@ -208,3 +227,14 @@ export default SlideArtist;
 // console.log('uneven', i)
 // }
 // }
+
+
+//                     <svg id={this.props.index} className={this.state.buttonsLeft} width="100" height="40" onClick={(e)=>this.clickAdd(e)}>
+//                         <rect x="0" y="0" rx="20" ry="40" width="80" height="30" fill="white"/>
+//                         <text fill="green" fontSize="20" x="20%" y="50%" textAnchor="middle">Add</text>
+//                     </svg>
+//                     {centerButton}
+//                     <svg className={this.state.buttonsRight} width="100" height="40"  onClick={()=>this.clickRelated()}>
+//                         <rect x="0" y="0" rx="20" ry="40" width="80" height="30" fill="white"/>
+//                         <text fill="green" fontSize="20" x="20%" y="50%" textAnchor="middle">Related</text>
+//                     </svg>

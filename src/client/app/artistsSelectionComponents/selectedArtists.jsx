@@ -51,60 +51,25 @@ class SelectedArtists extends React.Component {
 
     render(){
         let that = this;
-        let arrowMore;
-        let arrowLess;
-        let filtered = this.props.selected.reverse().filter(elem=> elem.selected == true);
+        
         let content = this.props.selected.map(function(elem,index){
-            
-             if(elem.selected == true && index < that.state.numberOfShownItems){                
-                return (
-                 
-                    <div className="selectedContainer">
-                        <p className="left">{elem.name}</p>
-                        <button value={elem.name} className="buttonRemove"><i onClick={(e)=>that.updateSelected(e)} className="fa fa-times fa-2x"></i></button>
-                    </div>
-                )
-            }
-            else if(elem.selected == true && index == that.state.numberOfShownItems){
-                if(that.state.showingAll == false){
-                    arrowMore = (
-                        <div>
-                            <button className="showHideItems">
-                            <i onClick={()=>that.showMore()} className="fa fa-sort-desc fa-2x"></i></button>
-                        </div>)
-                }
-                return (
-                    <div>
-                       
-                        <div className={that.state.classContainers}>
-                            <p className="left">{elem.name}</p>
-                            <button value={elem.name} className="buttonRemove"><i onClick={(e)=>that.updateSelected(e)} className="fa fa-times fa-2x"></i></button>
-                        </div>
-                        {arrowMore}
-                    </div>
-                )
-            }else {
-                 <div className={that.state.classContainers}>
-                    <p className="left">{elem.name}</p>
-                    <button value={elem.name} className="buttonRemove"><i onClick={(e)=>that.updateSelected(e)} className="fa fa-times fa-2x"></i></button>
-                </div>
-            }
-            
+            let patternURL = `url(#${elem.images[0].url})`;
+            return (
+                <svg className="selectedImage" height="5em" width="5em">
+                    <defs>
+                        <pattern id={elem.images[0].url} x="" y="" patternUnits="userSpaceOnUse" height="5em" width="5em">
+                        <image x="" y="" height="5em" width="5em" xlinkHref={elem.images[0].url}></image>
+                        </pattern>
+                    </defs>
+                    <circle cx="2.5em" cy="2.5em" r="2.5em" stroke="grey" strokeWidth="2" fill={patternURL} />
+                </svg>  
+            )
         })
-        if(that.state.showingAll == true){
-                    arrowLess = (
-                        <div>
-                            <button className="showHideItems">
-                            <i onClick={()=>that.showLess()} className="fa fa-sort-asc fa-2x"></i></button>
-                        </div>
-                    )
-                }
         return (
             
             <div className="container selected">
                
                         {content}
-                        {arrowLess}
             </div>
         )
     }

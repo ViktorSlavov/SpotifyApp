@@ -1,0 +1,16 @@
+﻿
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch build
+# Your branch is up-to-date with 'origin/build'.
+#
+# Changes to be committed:
+#	modified:   src/client/app/audioFilterComponents/audioFilterContainer.jsx
+#	modified:   src/client/app/home.jsx
+#	modified:   src/client/public/bundle.js
+#
+# Untracked files:
+#	SpotifyApp.zip
+#	node_modules/node-sass/vendor/win32-x64-48/
+#
+

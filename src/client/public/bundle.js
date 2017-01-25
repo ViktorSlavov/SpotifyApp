@@ -27413,11 +27413,13 @@
 	            token: localStorage.getItem('token'),
 	            artists: '',
 	            authenticated: '',
+	            savedStates: [],
 	            topSliderArtists: [],
 	            selectedArtists: [], //need this one to maintain the correct order of choices;
 	            songs: [],
+	            relatedArtists: [],
 	            numberOfItems: 2,
-	            createPlaylistButton: 'playlistButton hide'
+	            createPlaylistButton: 'playlistButton'
 	        };
 
 	        return _this;
@@ -27425,26 +27427,41 @@
 
 	    _createClass(Home, [{
 	        key: 'populateSelectedArtists',
-	        value: function populateSelectedArtists(value, numberOfItems) {
-	            var phSelected = this.state.topSliderArtists;
-	            var orderOfSelection = this.state.selectedArtists;
-	            phSelected.map(function (elem) {
-	                if (elem.name == value.name) {
-	                    elem.selected = !elem.selected;
-	                    elem.check = elem.check == '\uF00C' ? '' : '\uF00C';
-	                    orderOfSelection.push(elem);
-	                }
-	                return elem;
-	            });
-	            orderOfSelection = orderOfSelection.filter(function (elem) {
-	                return elem.selected == true;
-	            });
-	            this.setState({
-	                topSliderArtists: phSelected,
-	                selectedArtists: orderOfSelection,
-	                createPlaylistButton: orderOfSelection.length > 0 ? 'playlistButton' : 'playlistButton hide',
-	                numberOfItems: numberOfItems > 2 ? numberOfItems : 2
-	            });
+	        value: function populateSelectedArtists(value, action) {
+	            var that = this;
+	            var phSelected = void 0;
+	            if (action == 'Reorder') {
+	                phSelected = this.state.topSliderArtists;
+	                var first = phSelected[0];
+	                phSelected[0] = phSelected[value];
+	                phSelected[value] = first;
+	                console.log(phSelected);
+
+	                this.setState({
+	                    topSliderArtists: phSelected
+	                });
+	            } else if (action == 'Add') {
+	                var _phSelected = this.state.selectedArtists;
+	                _phSelected.push(value);
+	                this.setState({
+	                    selectedArtists: _phSelected
+	                });
+	            } else if (action == "Related") {
+
+	                _spotifyApi2.default.getRelatedArtists(that.state.token, value).then(function (results) {
+	                    var ph = that.state.savedStates;
+	                    var newArtists = [that.state.topSliderArtists[0]].concat(results.artists);
+	                    ph.push(that.state.topSliderArtists);
+	                    that.setState({
+	                        relatedArtists: [that.state.topSliderArtists[0]].concat(results.artists), //set the clicked to be the first and then add related artists around it
+	                        savedStates: ph, // push the previous artist into saved states so we can get to them with back button
+	                        topSliderArtists: [that.state.topSliderArtists[0]].concat(results.artists) });
+	                });
+	            } else if (action == 'Back') {
+	                this.setState({
+	                    topSliderArtists: this.state.savedStates.pop()
+	                });
+	            }
 	        }
 	    }, {
 	        key: 'componentWillMount',
@@ -27487,7 +27504,8 @@
 	                        });
 	                        that.setState({
 	                            artists: topArtists,
-	                            topSliderArtists: results
+	                            topSliderArtists: results,
+	                            savedStates: [results]
 	                        });
 	                    });
 	                })();
@@ -27507,9 +27525,9 @@
 	                    _react2.default.createElement(
 	                        'div',
 	                        null,
-	                        _react2.default.createElement(_sliderArtists2.default, { artists: this.state.topSliderArtists, active: 4,
-	                            populate: function populate(selected, numberOfItems) {
-	                                return that.populateSelectedArtists(selected, numberOfItems);
+	                        _react2.default.createElement(_sliderArtists2.default, { artists: this.state.topSliderArtists, active: 4, savedStates: this.state.savedStates.length,
+	                            populate: function populate(selected, action) {
+	                                return that.populateSelectedArtists(selected, action);
 	                            } }),
 	                        _react2.default.createElement(
 	                            _reactRouter.Link,
@@ -27518,10 +27536,8 @@
 	                        ),
 	                        _react2.default.createElement(_selectedArtists2.default, { populate: function populate(elem) {
 	                                return that.populateSelectedArtists(elem);
-	                            }, getNumberOfItems: function getNumberOfItems(value) {
-	                                return that.setItemsNumber(value);
 	                            },
-	                            numberOfItems: that.state.numberOfItems, selected: this.state.selectedArtists })
+	                            selected: this.state.selectedArtists })
 	                    )
 	                );
 	            } else {
@@ -27575,6 +27591,29 @@
 	            };
 	            req.open("GET", 'https://api.spotify.com/v1/me/top/artists', true);
 	            req.setRequestHeader('Authorization', auth, false);
+	            req.send();
+	        });
+	    },
+	    getRelatedArtists: function getRelatedArtists(token, artistId) {
+	        return new Promise(function (resolve, reject) {
+	            var req = new XMLHttpRequest();
+	            var auth = 'Bearer ' + token;
+	            var id = 'https://api.spotify.com/v1/artists/' + artistId + '/related-artists';
+	            req.onreadystatechange = function (data) {
+	                if (this.readyState == 4 && this.status == 200) {
+	                    var results = JSON.parse(data.currentTarget.response);
+	                    resolve(results);
+	                    // resolve(JSON.parse(data.currentTarget.response).audio_features.map(function(elem, index){
+	                    //     elem.artist = artists.artist[index]
+	                    //     elem.name = artists.names[names]
+	                    //     return elem
+	                    // }));
+	                } else if (this.readyState == 4 && this.status != 200) {
+	                    reject('Error');
+	                }
+	            };
+	            req.open("GET", id, true);
+	            req.setRequestHeader('Authorization', auth, true);
 	            req.send();
 	        });
 	    },
@@ -27732,24 +27771,21 @@
 	        var topKey = "";
 	        var minKey = "";
 	        if (feature != "") {
-	            console.log("Editing feature: ", "; Min: ", criteria[feature].min, "; Max: ", criteria[feature].max);
+	            //console.log("Editing feature: ",feature, "; Min: ",criteria[feature].min,"; Max: ", criteria[feature].max)
 	            criteria[feature].min -= mod;
 	            criteria[feature].max += mod;
 	        }
-	        if (prevArray.length > 0) {
-	            sortedSongs = prevArray;
-	        }
 
 	        var _loop = function _loop(key) {
-	            if (key == feature) {
-	                sortedSongs = sortedSongs.filter(function (elem) {
-	                    return elem[key] * 100 > criteria[key].min - mod && elem[key] * 100 <= criteria[key].max + mod;
-	                });
-	            } else {
-	                sortedSongs = sortedSongs.filter(function (elem) {
-	                    return elem[key] * 100 > criteria[key].min && elem[key] * 100 <= criteria[key].max;
-	                });
-	            }
+	            // if(key == feature){
+	            //     sortedSongs = sortedSongs.filter(function(elem){
+	            //         return elem[key]*100 > (criteria[key].min - mod) && elem[key]*100 <= (criteria[key].max + mod)
+	            //     })
+	            // } else {
+	            sortedSongs = sortedSongs.filter(function (elem) {
+	                return elem[key] * 100 > criteria[key].min && elem[key] * 100 <= criteria[key].max;
+	            });
+	            // }
 	            var modStr = criteria[key].max - criteria[key].min;
 
 	            // if(key == feature){
@@ -27775,19 +27811,32 @@
 	        // })
 	        var usedSongs = [];
 	        console.log(sortedSongs);
-	        sortedSongs.map(function (elem) {
-	            if (usedSongs.indexOf(elem.songName.toLowerCase()) < -1) {
+	        sortedSongs = sortedSongs.map(function (elem) {
+	            if (usedSongs.indexOf(elem.songName.toLowerCase()) < 0) {
 	                usedSongs.push(elem.songName.toLowerCase());
 	                return elem;
 	            } else {
-	                return 0;
+	                return null;
 	            }
-	        }).filter(function (elem) {
-	            return typeof elem != "number";
 	        });
-	        console.log(sortedSongs.length, sortedSongs, feature, mod);
+	        sortedSongs = sortedSongs.filter(function (elem) {
+	            return !!elem;
+	        });
+	        sortedSongs.push.apply(sortedSongs, prevArray);
+	        console.log("Sorted Songs Length: ", sortedSongs.length, " Sorted Songs: ", sortedSongs, " allSongs length: ", allSongs.length);
 	        if (sortedSongs.length < songCount) {
-	            return SpotifyApi.sortSongs(allSongs, criteria, songCount, 20, minKey);
+	            allSongs = allSongs.map(function (elem) {
+	                if (usedSongs.indexOf(elem.songName.toLowerCase()) > -1) {
+	                    return null;
+	                } else {
+	                    return elem;
+	                }
+	            });
+	            allSongs = allSongs.filter(function (elem) {
+	                return !!elem;
+	            });
+	            console.log("All songs length: ", allSongs.length);
+	            return SpotifyApi.sortSongs(allSongs, criteria, songCount, 10, minKey, sortedSongs);
 	        } else {
 	            return sortedSongs = sortedSongs.slice(0, songCount);
 	        }
@@ -27870,7 +27919,7 @@
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -27896,62 +27945,89 @@
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 	var SliderArtists = function (_React$Component) {
-	  _inherits(SliderArtists, _React$Component);
+	    _inherits(SliderArtists, _React$Component);
 
-	  function SliderArtists(props) {
-	    _classCallCheck(this, SliderArtists);
+	    function SliderArtists(props) {
+	        _classCallCheck(this, SliderArtists);
 
-	    var _this = _possibleConstructorReturn(this, (SliderArtists.__proto__ || Object.getPrototypeOf(SliderArtists)).call(this, props));
+	        var _this = _possibleConstructorReturn(this, (SliderArtists.__proto__ || Object.getPrototypeOf(SliderArtists)).call(this, props));
 
-	    _this.state = {
-	      artists: '',
-	      selected: [],
-	      active: 3
+	        _this.state = {
+	            artists: '',
+	            selected: [],
+	            active: 3
 
-	    };
-	    // this.populateSelectedArtists = this.populateSelectedArtists.bind(this);
-	    return _this;
-	  }
-
-	  _createClass(SliderArtists, [{
-	    key: 'populateSelectedArtists',
-	    value: function populateSelectedArtists(value) {
-	      this.props.populate(value);
+	        };
+	        // this.populateSelectedArtists = this.populateSelectedArtists.bind(this);
+	        return _this;
 	    }
-	  }, {
-	    key: 'setActiveSlider',
-	    value: function setActiveSlider(value) {
-	      console.log(value);
-	      this.setState({
-	        active: value
-	      });
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      var _this2 = this;
 
-	      var that = this;
-	      var count = 0;
-	      var content = this.props.artists.filter(function (elem) {
-	        return elem.selected == false;
-	      }).map(function (elem, index) {
-	        return _react2.default.createElement(_slideArtist2.default, { src: elem.images[0].url, artists: _this2.props.artists, name: elem.name, test: _this2.state.active,
-	          setActive: function setActive(value) {
-	            return that.setActiveSlider(value);
-	          }, index: index, check: elem.check, key: elem.images[0].url, populate: function populate(x) {
-	            return that.populateSelectedArtists(x);
-	          } });
-	      }); //USE SlideArtist here
-	      return _react2.default.createElement(
-	        'div',
-	        { className: 'container artists' },
-	        content
-	      );
-	    }
-	  }]);
+	    _createClass(SliderArtists, [{
+	        key: 'clickAdd',
+	        value: function clickAdd() {
+	            this.populateSelectedArtists(this.props.artists[0], 'Add');
+	        }
+	    }, {
+	        key: 'clickRelated',
+	        value: function clickRelated() {
+	            this.populateSelectedArtists(this.props.artists[0].id, 'Related');
+	        }
+	    }, {
+	        key: 'clickBack',
+	        value: function clickBack() {
+	            this.populateSelectedArtists(0, 'Back');
+	        }
+	    }, {
+	        key: 'populateSelectedArtists',
+	        value: function populateSelectedArtists(value, action) {
+	            this.props.populate(value, action);
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var _this2 = this;
 
-	  return SliderArtists;
+	            var that = this;
+	            var count = 0;
+	            var content = this.props.artists.map(function (elem, index) {
+	                return _react2.default.createElement(_slideArtist2.default, { src: elem.images[0].url, artists: _this2.props.artists, name: elem.name, test: _this2.state.active, id: elem.id, savedStates: _this2.props.savedStates,
+	                    setActive: function setActive(value) {
+	                        return that.setActiveSlider(value);
+	                    }, index: index, check: elem.check, key: elem.images[0].url, populate: function populate(value, action) {
+	                        return that.populateSelectedArtists(value, action);
+	                    } });
+	            }); //USE SlideArtist here
+	            return _react2.default.createElement(
+	                'div',
+	                null,
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'container artists' },
+	                    content
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'selectedArtist' },
+	                    _react2.default.createElement(
+	                        'p',
+	                        null,
+	                        this.props.artists[0].name
+	                    ),
+	                    _react2.default.createElement('i', { className: 'fa fa-plus fa-2x', value: 'Add', 'aria-hidden': 'true', alt: 'Add artists', onClick: function onClick() {
+	                            return _this2.clickAdd();
+	                        } }),
+	                    _react2.default.createElement('i', { className: 'fa fa-random fa-2x', value: 'Related', 'aria-hidden': 'true', alt: 'Get related artists', onClick: function onClick(e) {
+	                            return _this2.clickRelated();
+	                        } }),
+	                    _react2.default.createElement('i', { className: 'fa fa-undo fa-2x', value: 'Back', 'aria-hidden': 'true', alt: 'Go back', onClick: function onClick() {
+	                            return _this2.clickBack();
+	                        } })
+	                )
+	            );
+	        }
+	    }]);
+
+	    return SliderArtists;
 	}(_react2.default.Component);
 
 	exports.default = SliderArtists;
@@ -28582,40 +28658,23 @@
 	        _this.state = {
 	            check: '', //this.props.checked,
 	            stroke: 'grey',
-	            strokeW: '2'
-
+	            strokeW: '2',
+	            buttonsRight: 'buttons right',
+	            buttonsLeft: 'buttons left',
+	            buttonsCenter: 'buttons center',
+	            label: 'badge label '
 	        };
 	        return _this;
 	    }
 
 	    _createClass(SlideArtist, [{
-	        key: 'mouseEnter',
-	        value: function mouseEnter(e) {
-	            // this.setState({
-	            //     stroke: 'badge active'
-	            // })
-	        }
-	    }, {
-	        key: 'mouseLeave',
-	        value: function mouseLeave(e) {
-	            //  this.setState({
-	            //     class: 'badge'
-	            // })
-	        }
-	    }, {
 	        key: 'handleClick',
 	        value: function handleClick(e) {
-	            var ph = this.props.check;
-	            if (ph == '') {
-	                this.props.populate({
-	                    name: this.props.name,
-	                    selected: true
-	                });
+	            if (this.props.index == 0) {// Show Add/Related/Back
+
 	            } else {
-	                this.props.populate({
-	                    name: this.props.name,
-	                    selected: false
-	                });
+	                //swap places
+	                this.props.populate(this.props.index, 'Reorder');
 	            }
 	        }
 	    }, {
@@ -28646,11 +28705,32 @@
 	                return badge;
 	            }
 	        }
+	        //   <svg  className={this.state.label} x={label.x} style={labelStyle}>
+	        //                     <rect x={label.x} y={label.y} rx={label.rx} ry={label.ry} width={label.width} height={label.height} fill="#B90000"/>
+	        //                     <text fill="white" fontSize={label.fontSize} x={label.textX} y={label.textY} textAnchor="middle">{this.props.name}</text>
+	        //                 </svg>
+
+	    }, {
+	        key: 'setLabel',
+	        value: function setLabel(name) {
+	            var nameL = name.length;
+	            var label = {
+	                x: 20 - nameL,
+	                y: 2,
+	                rx: 20,
+	                ry: 40,
+	                width: 50 + nameL * 5,
+	                height: 20,
+	                fontSize: 14,
+	                textX: (45 + nameL * 5) / 2,
+	                textY: 15
+	            };
+	            return label;
+	        }
 	    }, {
 	        key: 'setStyle',
 	        value: function setStyle(index) {
 	            index++;
-	            console.log(this.props.artists.length);
 	            var current = this.props.name;
 	            var artists = this.props.artists;
 	            var mapLefts = [];
@@ -28674,7 +28754,7 @@
 	                step = 3;
 	            } else if (index > 10 && index <= 15) {
 	                step = 2.8;
-	            } else if (index > 15 && index <= 20) {
+	            } else if (index > 15 && index <= 22) {
 	                step = 2.7;
 	            }
 
@@ -28682,7 +28762,13 @@
 	            //check for center element
 	            if (index == 1) {
 	                style.marginLeft = '35em';
-	                style.marginTop = '7.5em';
+	                style.marginTop = '15em';
+	            } else if (index == 20) {
+	                style.marginLeft = parseInt(left - 5 * step * coeficient) + 'em';
+	                style.marginTop = parseInt(top + step + 30) + 'em';
+	            } else if (index == 21) {
+	                style.marginLeft = parseInt(right + 5 * step * coeficient) + 'em';
+	                style.marginTop = parseInt(top + step + 30) + 'em';
 	            }
 	            //all left
 	            else if (index % 2 == 0) {
@@ -28699,15 +28785,15 @@
 	                        //even but not 3d
 
 	                        style.marginLeft = parseInt(left - indexLeft * step * coeficient) + 'em';
-	                        style.marginTop = parseInt(top + step + 10) + 'em';
+	                        style.marginTop = parseInt(top + step + 12) + 'em';
 	                    } else if (indexLeft % 3 == 0) {
 	                        // 3d
 	                        style.marginLeft = parseInt(left - (indexLeft - 2) * step * coeficient) + 'em';
-	                        style.marginTop = parseInt(top + step + 20) + 'em';
+	                        style.marginTop = parseInt(top + step + 23) + 'em';
 	                    } else {
 	                        //uneven
 	                        style.marginLeft = parseInt(left - indexLeft * step * coeficient) + 'em';
-	                        style.marginTop = parseInt(top + step + 10) + 'em';
+	                        style.marginTop = parseInt(top + step + 12) + 'em';
 	                    }
 	                }
 	                //all right 
@@ -28724,15 +28810,15 @@
 	                            //even but not 3d
 
 	                            style.marginLeft = parseInt(right + indexRight * step * coeficient) + 'em';
-	                            style.marginTop = parseInt(top + step + 10) + 'em';
+	                            style.marginTop = parseInt(top + step + 12) + 'em';
 	                        } else if (indexRight % 3 == 0) {
 	                            // 3d
 	                            style.marginLeft = parseInt(right + (indexRight - 2) * step * coeficient) + 'em';
-	                            style.marginTop = parseInt(top + step + 20) + 'em';
+	                            style.marginTop = parseInt(top + step + 23) + 'em';
 	                        } else {
 	                            //uneven
 	                            style.marginLeft = parseInt(right + indexRight * step * coeficient) + 'em';
-	                            style.marginTop = parseInt(top + step + 10) + 'em';
+	                            style.marginTop = parseInt(top + step + 12) + 'em';
 	                        }
 	                    }
 	            return style;
@@ -28742,29 +28828,45 @@
 	        value: function render() {
 	            var _this2 = this;
 
+	            var centerButton = _react2.default.createElement('div', null);
 	            var badge = this.setBadge(this.props.index);
+	            var label = this.setLabel(this.props.name);
 	            var badgeStyle = this.setStyle(this.props.index);
+	            var labelStyle = badgeStyle;
 	            var patternURL = 'url(#' + this.props.src + ')';
-	            return _react2.default.createElement(
-	                'svg',
-	                { className: 'badge', height: badge.svgH, width: badge.svgH,
-	                    onMouseEnter: function onMouseEnter(e) {
-	                        return _this2.mouseEnter(e);
-	                    }, onMouseLeave: function onMouseLeave(e) {
-	                        return _this2.mouseLeave(e);
-	                    }, style: badgeStyle },
-	                _react2.default.createElement(
-	                    'defs',
-	                    null,
+	            if (this.props.savedStates > 0) {
+	                centerButton = _react2.default.createElement(
+	                    'svg',
+	                    { className: this.state.buttonsCenter, width: '100', height: '40', onClick: function onClick() {
+	                            return _this2.clickBack();
+	                        } },
+	                    _react2.default.createElement('rect', { x: '0', y: '0', rx: '20', ry: '40', width: '80', height: '30', fill: 'white' }),
 	                    _react2.default.createElement(
-	                        'pattern',
-	                        { id: this.props.src, x: badge.patternX, y: badge.patternY, patternUnits: 'userSpaceOnUse', height: badge.patternH, width: badge.patternW },
-	                        _react2.default.createElement('image', { x: badge.imageX, y: badge.imageY, height: badge.imageH, width: badge.imageW, xlinkHref: this.props.src })
+	                        'text',
+	                        { fill: 'green', fontSize: '20', x: '20%', y: '50%', textAnchor: 'middle' },
+	                        'Back'
 	                    )
-	                ),
-	                _react2.default.createElement('circle', { cx: badge.circleX, cy: badge.circleY, r: badge.circleR, stroke: 'grey', strokeWidth: '2', fill: patternURL, onClick: function onClick(e) {
-	                        return _this2.handleClick(e);
-	                    } })
+	                );
+	            }
+	            return _react2.default.createElement(
+	                'div',
+	                null,
+	                _react2.default.createElement(
+	                    'svg',
+	                    { className: 'badge', height: badge.svgH, width: badge.svgH, style: badgeStyle },
+	                    _react2.default.createElement(
+	                        'defs',
+	                        null,
+	                        _react2.default.createElement(
+	                            'pattern',
+	                            { id: this.props.src, x: badge.patternX, y: badge.patternY, patternUnits: 'userSpaceOnUse', height: badge.patternH, width: badge.patternW },
+	                            _react2.default.createElement('image', { x: badge.imageX, y: badge.imageY, height: badge.imageH, width: badge.imageW, xlinkHref: this.props.src })
+	                        )
+	                    ),
+	                    _react2.default.createElement('circle', { cx: badge.circleX, cy: badge.circleY, r: badge.circleR, stroke: 'grey', strokeWidth: '2', fill: patternURL, onClick: function onClick(e) {
+	                            return _this2.handleClick(e);
+	                        } })
+	                )
 	            );
 	        }
 	    }]);
@@ -28796,6 +28898,17 @@
 	// console.log('uneven', i)
 	// }
 	// }
+
+
+	//                     <svg id={this.props.index} className={this.state.buttonsLeft} width="100" height="40" onClick={(e)=>this.clickAdd(e)}>
+	//                         <rect x="0" y="0" rx="20" ry="40" width="80" height="30" fill="white"/>
+	//                         <text fill="green" fontSize="20" x="20%" y="50%" textAnchor="middle">Add</text>
+	//                     </svg>
+	//                     {centerButton}
+	//                     <svg className={this.state.buttonsRight} width="100" height="40"  onClick={()=>this.clickRelated()}>
+	//                         <rect x="0" y="0" rx="20" ry="40" width="80" height="30" fill="white"/>
+	//                         <text fill="green" fontSize="20" x="20%" y="50%" textAnchor="middle">Related</text>
+	//                     </svg>
 
 /***/ },
 /* 251 */
@@ -28978,102 +29091,28 @@
 	        key: 'render',
 	        value: function render() {
 	            var that = this;
-	            var arrowMore = void 0;
-	            var arrowLess = void 0;
-	            var filtered = this.props.selected.reverse().filter(function (elem) {
-	                return elem.selected == true;
-	            });
-	            var content = this.props.selected.map(function (elem, index) {
 
-	                if (elem.selected == true && index < that.state.numberOfShownItems) {
-	                    return _react2.default.createElement(
-	                        'div',
-	                        { className: 'selectedContainer' },
-	                        _react2.default.createElement(
-	                            'p',
-	                            { className: 'left' },
-	                            elem.name
-	                        ),
-	                        _react2.default.createElement(
-	                            'button',
-	                            { value: elem.name, className: 'buttonRemove' },
-	                            _react2.default.createElement('i', { onClick: function onClick(e) {
-	                                    return that.updateSelected(e);
-	                                }, className: 'fa fa-times fa-2x' })
-	                        )
-	                    );
-	                } else if (elem.selected == true && index == that.state.numberOfShownItems) {
-	                    if (that.state.showingAll == false) {
-	                        arrowMore = _react2.default.createElement(
-	                            'div',
-	                            null,
-	                            _react2.default.createElement(
-	                                'button',
-	                                { className: 'showHideItems' },
-	                                _react2.default.createElement('i', { onClick: function onClick() {
-	                                        return that.showMore();
-	                                    }, className: 'fa fa-sort-desc fa-2x' })
-	                            )
-	                        );
-	                    }
-	                    return _react2.default.createElement(
-	                        'div',
+	            var content = this.props.selected.map(function (elem, index) {
+	                var patternURL = 'url(#' + elem.images[0].url + ')';
+	                return _react2.default.createElement(
+	                    'svg',
+	                    { className: 'selectedImage', height: '5em', width: '5em' },
+	                    _react2.default.createElement(
+	                        'defs',
 	                        null,
 	                        _react2.default.createElement(
-	                            'div',
-	                            { className: that.state.classContainers },
-	                            _react2.default.createElement(
-	                                'p',
-	                                { className: 'left' },
-	                                elem.name
-	                            ),
-	                            _react2.default.createElement(
-	                                'button',
-	                                { value: elem.name, className: 'buttonRemove' },
-	                                _react2.default.createElement('i', { onClick: function onClick(e) {
-	                                        return that.updateSelected(e);
-	                                    }, className: 'fa fa-times fa-2x' })
-	                            )
-	                        ),
-	                        arrowMore
-	                    );
-	                } else {
-	                    _react2.default.createElement(
-	                        'div',
-	                        { className: that.state.classContainers },
-	                        _react2.default.createElement(
-	                            'p',
-	                            { className: 'left' },
-	                            elem.name
-	                        ),
-	                        _react2.default.createElement(
-	                            'button',
-	                            { value: elem.name, className: 'buttonRemove' },
-	                            _react2.default.createElement('i', { onClick: function onClick(e) {
-	                                    return that.updateSelected(e);
-	                                }, className: 'fa fa-times fa-2x' })
+	                            'pattern',
+	                            { id: elem.images[0].url, x: '', y: '', patternUnits: 'userSpaceOnUse', height: '5em', width: '5em' },
+	                            _react2.default.createElement('image', { x: '', y: '', height: '5em', width: '5em', xlinkHref: elem.images[0].url })
 	                        )
-	                    );
-	                }
-	            });
-	            if (that.state.showingAll == true) {
-	                arrowLess = _react2.default.createElement(
-	                    'div',
-	                    null,
-	                    _react2.default.createElement(
-	                        'button',
-	                        { className: 'showHideItems' },
-	                        _react2.default.createElement('i', { onClick: function onClick() {
-	                                return that.showLess();
-	                            }, className: 'fa fa-sort-asc fa-2x' })
-	                    )
+	                    ),
+	                    _react2.default.createElement('circle', { cx: '2.5em', cy: '2.5em', r: '2.5em', stroke: 'grey', strokeWidth: '2', fill: patternURL })
 	                );
-	            }
+	            });
 	            return _react2.default.createElement(
 	                'div',
 	                { className: 'container selected' },
-	                content,
-	                arrowLess
+	                content
 	            );
 	        }
 	    }]);
@@ -29087,7 +29126,7 @@
 /* 254 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -29117,15 +29156,9 @@
 	    }
 
 	    _createClass(Banner, [{
-	        key: 'render',
+	        key: "render",
 	        value: function render() {
-	            return _react2.default.createElement('div', null)
-	            // <div className="bannerContainer">
-	            //     <div className="skewedBanner">Artists<i className="fa fa-chevron-right fa-3x" aria-hidden="true"></i></div>
-	            //     <div className="skewedBanner">Filter<i className="fa fa-chevron-right fa-3x" aria-hidden="true"></i></div>
-	            //     <div className="skewedBanner">Create your playlist</div>
-	            // </div>
-	            ;
+	            return _react2.default.createElement("div", { className: "bannerContainer" });
 	        }
 	    }]);
 
@@ -38742,7 +38775,7 @@
 
 
 	// module
-	exports.push([module.id, ".badge {\n  position: absolute !important;\n  cursor: pointer; }\n  .badge.active {\n    box-shadow: 0px 0px 100px 0px #84bd00 !important; }\n\n.container.artists {\n  height: 30em !important;\n  width: 70em !important; }\n\n.filters {\n  list-style-type: none !important; }\n\nul.filters {\n  padding-top: 5%; }\n\n.input {\n  margin: auto; }\n\n.form {\n  margin: auto;\n  display: block;\n  text-align: center; }\n\nul {\n  padding: 0; }\n\n.filterContainer {\n  text-align: center; }\n\nbutton {\n  margin: auto;\n  display: block; }\n\n@keyframes moveLeft {\n  from {\n    opacity: 1; }\n  to {\n    opacity: 0; } }\n\n.coverflow__cover__25-7e {\n  box-shadow: 0px 0px 100px 0px #84bd00 !important;\n  width: 13.9rem;\n  height: 10rem; }\n\n@keyframes fadeIn {\n  from {\n    opacity: 0; }\n  to {\n    opacity: 1; } }\n\n.coverflow__stage__14oqC {\n  pointer-events: all !important; }\n\n.fadeInAnimation {\n  animation: 0.3 fadeIn; }\n\n.selectedContainer {\n  width: 30em;\n  float: left;\n  color: white;\n  background: black;\n  border: 1px solid #f47321;\n  height: 2em; }\n  .selectedContainer.hidden {\n    display: none; }\n\n.selectedArtistsImage {\n  float: left;\n  width: 5em;\n  height: 4em; }\n\n.slider {\n  margin: 0 auto;\n  padding: 40px;\n  width: 80%;\n  color: #333;\n  background: #419be0; }\n\n.selected {\n  width: 30em;\n  margin: auto; }\n\n* {\n  box-shadow: none !important; }\n\n.artistContainer {\n  display: block; }\n\nsvg text {\n  font-family: FontAwesome; }\n\n.selectedArtists {\n  background-size: contain;\n  width: 5em;\n  height: 6em;\n  background-repeat: no-repeat;\n  opacity: 0.9; }\n\n.buttonRemove {\n  background: none;\n  border: none;\n  color: red;\n  margin-left: 28em;\n  margin-top: -0.2em;\n  cursor: pointer; }\n  .buttonRemove:focus {\n    outline: 0; }\n\n.left {\n  float: left;\n  line-height: 1.6em;\n  margin-left: 0.4em;\n  font-size: 1.2em; }\n\n.InputRange-slider {\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: #01a982;\n  border: 1px solid #01a982;\n  border-radius: 100%;\n  cursor: pointer;\n  display: block;\n  height: 1rem;\n  margin-left: -0.5rem;\n  margin-top: -0.65rem;\n  outline: none;\n  position: absolute;\n  top: 50%;\n  transition: -webkit-transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  width: 1rem; }\n\n.InputRange-slider:active {\n  -webkit-transform: scale(1.3);\n  transform: scale(1.3); }\n\n.InputRange-slider:focus {\n  box-shadow: 0 0 0 5px rgba(63, 81, 181, 0.2); }\n\n.InputRange.is-disabled .InputRange-slider {\n  background: #cccccc;\n  border: 1px solid #cccccc;\n  box-shadow: none;\n  -webkit-transform: none;\n  transform: none; }\n\n.InputRange-sliderContainer {\n  transition: left 0.3s ease-out; }\n\n.InputRange-label {\n  color: #aaaaaa;\n  font-family: \"Helvetica Neue\", san-serif;\n  font-size: 0.8rem;\n  white-space: nowrap; }\n\n.InputRange-label--min,\n.InputRange-label--max {\n  bottom: -1.4rem;\n  position: absolute; }\n\n.InputRange-label--min {\n  left: 0; }\n\n.InputRange-label--max {\n  right: 0; }\n\n.InputRange-label--value {\n  position: absolute;\n  top: -1.8rem; }\n\n.InputRange-labelContainer {\n  left: -50%;\n  position: relative; }\n\n.InputRange-label--max .InputRange-labelContainer {\n  left: 50%; }\n\n.InputRange-track {\n  background: #eeeeee;\n  border-radius: 0.3rem;\n  cursor: pointer;\n  display: block;\n  height: 0.3rem;\n  position: relative;\n  transition: left 0.3s ease-out, width 0.3s ease-out; }\n\n.InputRange.is-disabled .InputRange-track {\n  background: #eeeeee; }\n\n.InputRange-track--container {\n  left: 0;\n  margin-top: -0.15rem;\n  position: absolute;\n  right: 0;\n  top: 50%; }\n\n.InputRange-track--active {\n  background: #01a982; }\n\n.InputRange {\n  height: 1rem;\n  position: relative;\n  width: 100%; }\n\n.skewedBanner {\n  float: left;\n  color: #84bd00;\n  background-color: black;\n  transform: skewX(-10deg);\n  -webkit-transform: skew(-10deg);\n  -moz-transform: skew(-10deg);\n  text-align: center;\n  line-height: 2.5em;\n  width: 33.33%;\n  height: 3rem; }\n  .skewedBanner.inverted {\n    color: black;\n    background-color: #84bd00; }\n\n.bannerContainer {\n  width: 100%;\n  background: black;\n  height: 3rem; }\n\n.fa-chevron-right {\n  float: right !important; }\n\nbody {\n  background: black; }\n\nul {\n  list-style-type: none; }\n\n.login {\n  background: white !important;\n  width: 100%;\n  height: 100%; }\n\n.playlistButton {\n  background: #84bd00;\n  border-radius: 0.3em;\n  width: 15em;\n  height: 5em;\n  box-shadow: 0px 0px 100px 0px #84bd00 !important;\n  border: 1px solid #84bd00;\n  color: black !important; }\n  .playlistButton.hide {\n    display: none; }\n", ""]);
+	exports.push([module.id, ".badge {\n  position: absolute !important;\n  cursor: pointer; }\n  .badge.active {\n    box-shadow: 0px 0px 100px 0px #84bd00 !important; }\n\n.label {\n  position: absolute !important;\n  cursor: pointer; }\n  .label.hidden {\n    display: none; }\n\n.buttons {\n  position: absolute; }\n  .buttons.hidden {\n    display: none; }\n  .buttons.center {\n    margin-left: 31em;\n    margin-top: 24em; }\n  .buttons.left {\n    margin-left: 23em;\n    margin-top: 17.5em; }\n  .buttons.right {\n    margin-left: 35em;\n    margin-top: 21em; }\n\n.container.artists {\n  height: 30em !important;\n  width: 70em !important; }\n\n.filters {\n  list-style-type: none !important; }\n\nul.filters {\n  padding-top: 5%; }\n\n.input {\n  margin: auto; }\n\n.form {\n  margin: auto;\n  display: block;\n  text-align: center; }\n\nul {\n  padding: 0; }\n\n.filterContainer {\n  text-align: center; }\n\nbutton {\n  margin: auto;\n  display: block; }\n\n@keyframes moveLeft {\n  from {\n    opacity: 1; }\n  to {\n    opacity: 0; } }\n\n.coverflow__cover__25-7e {\n  box-shadow: 0px 0px 100px 0px #84bd00 !important;\n  width: 13.9rem;\n  height: 10rem; }\n\n@keyframes fadeIn {\n  from {\n    opacity: 0; }\n  to {\n    opacity: 1; } }\n\n.coverflow__stage__14oqC {\n  pointer-events: all !important; }\n\n.fadeInAnimation {\n  animation: 0.3 fadeIn; }\n\n.selectedContainer {\n  width: 30em;\n  float: left;\n  color: white;\n  background: black;\n  border: 1px solid #f47321;\n  height: 2em; }\n  .selectedContainer.hidden {\n    display: none; }\n\n.selectedArtist {\n  text-align: center; }\n  .selectedArtist > p {\n    font-size: 3em; }\n  .selectedArtist > i {\n    margin: 1.5em;\n    margin-top: 0.5em;\n    color: #f47321;\n    cursor: pointer; }\n    .selectedArtist > i:hover {\n      color: #84bd00; }\n\n.selectedImage {\n  margin: 1em; }\n\n.slider {\n  margin: 0 auto;\n  padding: 40px;\n  width: 80%;\n  color: #333;\n  background: #419be0; }\n\n.selected {\n  width: 30em;\n  margin: auto; }\n\n* {\n  box-shadow: none !important; }\n\n.artistContainer {\n  display: block; }\n\nsvg text {\n  font-family: FontAwesome; }\n\n.selectedArtists {\n  background-size: contain;\n  width: 5em;\n  height: 6em;\n  background-repeat: no-repeat;\n  opacity: 0.9; }\n\n.buttonRemove {\n  background: none;\n  border: none;\n  color: red;\n  margin-left: 28em;\n  margin-top: -0.2em;\n  cursor: pointer; }\n  .buttonRemove:focus {\n    outline: 0; }\n\n.left {\n  float: left;\n  line-height: 1.6em;\n  margin-left: 0.4em;\n  font-size: 1.2em; }\n\n.InputRange-slider {\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  background: #01a982;\n  border: 1px solid #01a982;\n  border-radius: 100%;\n  cursor: pointer;\n  display: block;\n  height: 1rem;\n  margin-left: -0.5rem;\n  margin-top: -0.65rem;\n  outline: none;\n  position: absolute;\n  top: 50%;\n  transition: -webkit-transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;\n  width: 1rem; }\n\n.InputRange-slider:active {\n  -webkit-transform: scale(1.3);\n  transform: scale(1.3); }\n\n.InputRange-slider:focus {\n  box-shadow: 0 0 0 5px rgba(63, 81, 181, 0.2); }\n\n.InputRange.is-disabled .InputRange-slider {\n  background: #cccccc;\n  border: 1px solid #cccccc;\n  box-shadow: none;\n  -webkit-transform: none;\n  transform: none; }\n\n.InputRange-sliderContainer {\n  transition: left 0.3s ease-out; }\n\n.InputRange-label {\n  color: #aaaaaa;\n  font-family: \"Helvetica Neue\", san-serif;\n  font-size: 0.8rem;\n  white-space: nowrap; }\n\n.InputRange-label--min,\n.InputRange-label--max {\n  bottom: -1.4rem;\n  position: absolute; }\n\n.InputRange-label--min {\n  left: 0; }\n\n.InputRange-label--max {\n  right: 0; }\n\n.InputRange-label--value {\n  position: absolute;\n  top: -1.8rem; }\n\n.InputRange-labelContainer {\n  left: -50%;\n  position: relative; }\n\n.InputRange-label--max .InputRange-labelContainer {\n  left: 50%; }\n\n.InputRange-track {\n  background: #eeeeee;\n  border-radius: 0.3rem;\n  cursor: pointer;\n  display: block;\n  height: 0.3rem;\n  position: relative;\n  transition: left 0.3s ease-out, width 0.3s ease-out; }\n\n.InputRange.is-disabled .InputRange-track {\n  background: #eeeeee; }\n\n.InputRange-track--container {\n  left: 0;\n  margin-top: -0.15rem;\n  position: absolute;\n  right: 0;\n  top: 50%; }\n\n.InputRange-track--active {\n  background: #01a982; }\n\n.InputRange {\n  height: 1rem;\n  position: relative;\n  width: 100%; }\n\n@media (min-width: 768px) {\n  #app {\n    margin: 0;\n    width: 80em; }\n  .container.artists {\n    margin-top: 5em; } }\n\n@media (min-width: 1200px) {\n  #app {\n    margin: auto;\n    width: 100em; }\n  .container.artists {\n    margin-top: 0em; } }\n\n.skewedBanner {\n  float: left;\n  color: #84bd00;\n  background-color: black;\n  transform: skewX(-10deg);\n  -webkit-transform: skew(-10deg);\n  -moz-transform: skew(-10deg);\n  text-align: center;\n  line-height: 2.5em;\n  width: 33.33%;\n  height: 3rem; }\n  .skewedBanner.inverted {\n    color: black;\n    background-color: #84bd00; }\n\n.bannerContainer {\n  width: 100%;\n  background: black;\n  height: 4rem; }\n\n.fa-chevron-right {\n  float: right !important; }\n\nbody {\n  background: white; }\n\nul {\n  list-style-type: none; }\n\n.login {\n  background: white !important;\n  width: 100%;\n  height: 100%; }\n\n.playlistButton {\n  background: #84bd00;\n  border-radius: 0.3em;\n  width: 15em;\n  height: 5em;\n  box-shadow: 0px 0px 100px 0px #84bd00 !important;\n  border: 1px solid #84bd00;\n  color: black !important; }\n  .playlistButton.hide {\n    display: none; }\n", ""]);
 
 	// exports
 
